@@ -35,7 +35,7 @@ app.get('/about', (req, res) => {
 
 // New route to fetch data from MySQL
 app.get('/users', (req, res) => {
-    const sql = 'SELECT * FROM customer'; // Replace 'users' with your table name
+    const sql = 'SELECT * FROM members'; // Replace 'users' with your table name
     db.query(sql, (err, results) => {
         if (err) {
             console.error('Error fetching data:', err);
