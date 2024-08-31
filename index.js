@@ -3,6 +3,14 @@ const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
 
 const app = express();
+const cors = require("cors");
+const corsConfig = {
+    origin: "*",
+    Credential: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+};
+app.options("", cors(corsConfig));
+app.use(cors(corsConfig));
 app.use(express.json());
 const PORT = 3306;
 
