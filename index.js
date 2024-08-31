@@ -82,10 +82,6 @@ app.post('/register/:name/:email/:username/:password/:phone/:money', async (req,
         return res.status(400).send('All fields (name, email, username, password, phone, money) are required');
     }
 
-    try {
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
-
         // SQL query with placeholders
         const sql = 'INSERT INTO members (name, email, username, password, phone, money) VALUES (?, ?, ?, ?, ?, ?)';
 
@@ -98,10 +94,6 @@ app.post('/register/:name/:email/:username/:password/:phone/:money', async (req,
 
             res.status(201).send('User registered successfully');
         });
-    } catch (err) {
-        console.error('Error hashing password:', err);
-        res.status(500).send('An error occurred while processing the request.');
-    }
 });
 
 module.exports = app;
