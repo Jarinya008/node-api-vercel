@@ -76,7 +76,7 @@ app.get('/users', (req, res) => {
 //     }
 // });
 
-app.post('/register/:name/:email/:username/:password/:phone/:money', async (req, res) => {
+app.post('/register/:name/:email/:username/:password/:phone/:money', (req, res) => {
     const { name, email, username, password, phone, money } = req.params; // Accessing all parameters from the URL
 
     // Check if any required field is missing
@@ -84,18 +84,18 @@ app.post('/register/:name/:email/:username/:password/:phone/:money', async (req,
         return res.status(400).send('All fields (name, email, username, password, phone, money) are required');
     }
 
-        // SQL query with placeholders
-        const sql = 'INSERT INTO members (name, email, username, password, phone, money) VALUES (?, ?, ?, ?, ?, ?)';
+    // SQL query with placeholders
+    const sql = 'INSERT INTO members (name, email, username, password, phone, money) VALUES (?, ?, ?, ?, ?, ?)';
 
-        // Execute the query with values
-        db.query(sql, [name, email, username, hashedPassword, phone, money], (err, results) => {
-            if (err) {
-                console.error('Error inserting data:', err);
-                return res.status(500).send('An error occurred while inserting data.');
-            }
+    // Execute the query with values
+    db.query(sql, [name, email, username, password, phone, money], (err, results) => {
+        if (err) {
+            console.error('Error inserting data:', err);
+            return res.status(500).send('An error occurred while inserting data.');
+        }
 
-            res.status(201).send('User registered successfully');
-        });
+        res.status(201).send('User registered successfully');
+    });
 });
 
 module.exports = app;
