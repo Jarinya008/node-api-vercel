@@ -132,6 +132,46 @@ app.post('/login', (req, res) => {
     });
 });
 
+app.post('/forget_password', (req, res) => {
+    const { name, email, phone, new_password } = req.body; // การเข้าถึงพารามิเตอร์จาก request body
+
+    // ตรวจสอบว่ามีฟิลด์ที่ต้องการหายไปหรือไม่
+    if (!name || !email || !phone || !new_password) {
+        return res.status(400).send('กรุณากรอกข้อมูลให้ครบทุกช่อง (username และ password)');
+    }
+
+    // SQL query เพื่อทำการตรวจสอบผู้ใช้
+    const sql = 'SELECT * FROM members WHERE name = ? AND email = ? AND phone = ?';
+
+    // การดำเนินการ query โดยใช้ค่า
+    db.query(sql, [name, email, phone], (err, results) => {
+        if (err) {
+            console.error('เกิดข้อผิดพลาดในการสอบถามข้อมูล:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดขณะสอบถามข้อมูล.');
+        }
+
+        if (results.length > 0) {
+            const sql = 'UPDATE members SET password = ?';
+            db.query(sql, [new_password], (err, results) => {
+                if (err) {
+                    console.error('เกิดข้อผิดพลาดในการอัปเดตข้อมูล:', err);
+                    return res.status(500).send('เกิดข้อผิดพลาดขณะอัปเดตข้อมูล.');
+                }
+        
+                if (results.affectedRows > 0) {
+                    res.status(200).send('อัปเดตรหัสผ่านสำเร็จ');
+                } else {
+                    res.status(404).send('ไม่พบผู้ใช้ที่ต้องการอัปเดต');
+                }
+            });
+        } else {
+            res.status(401).send('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+        }
+    });
+});
+
+
+
 module.exports = app;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
