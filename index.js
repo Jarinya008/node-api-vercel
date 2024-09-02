@@ -106,6 +106,32 @@ app.post('/register/:name/:email/:username/:password/:phone/:money', (req, res) 
     });
 });
 
+app.post('/login', (req, res) => {
+    const { username, password } = req.body; // การเข้าถึงพารามิเตอร์จาก request body
+
+    // ตรวจสอบว่ามีฟิลด์ที่ต้องการหายไปหรือไม่
+    if (!username || !password) {
+        return res.status(400).send('กรุณากรอกข้อมูลให้ครบทุกช่อง (username และ password)');
+    }
+
+    // SQL query เพื่อทำการตรวจสอบผู้ใช้
+    const sql = 'SELECT * FROM members WHERE username = ? AND password = ?';
+
+    // การดำเนินการ query โดยใช้ค่า
+    db.query(sql, [username, password], (err, results) => {
+        if (err) {
+            console.error('เกิดข้อผิดพลาดในการสอบถามข้อมูล:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดขณะสอบถามข้อมูล.');
+        }
+
+        if (results.length > 0) {
+            res.status(200).send('เข้าสู่ระบบสำเร็จ');
+        } else {
+            res.status(401).send('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+        }
+    });
+});
+
 module.exports = app;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
