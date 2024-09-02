@@ -133,18 +133,18 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/forget_password', (req, res) => {
-    const { name, email, phone, new_password } = req.body; // การเข้าถึงพารามิเตอร์จาก request body
+    const { username, email, phone, new_password } = req.body; // การเข้าถึงพารามิเตอร์จาก request body
 
     // ตรวจสอบว่ามีฟิลด์ที่ต้องการหายไปหรือไม่
-    if (!name || !email || !phone || !new_password) {
+    if (!username || !email || !phone || !new_password) {
         return res.status(400).send('กรุณากรอกข้อมูลให้ครบทุกช่อง (username และ password)');
     }
 
     // SQL query เพื่อทำการตรวจสอบผู้ใช้
-    const sql = 'SELECT * FROM members WHERE name = ? AND email = ? AND phone = ?';
+    const sql = 'SELECT * FROM members WHERE username = ? AND email = ? AND phone = ?';
 
     // การดำเนินการ query โดยใช้ค่า
-    db.query(sql, [name, email, phone], (err, results) => {
+    db.query(sql, [username, email, phone], (err, results) => {
         if (err) {
             console.error('เกิดข้อผิดพลาดในการสอบถามข้อมูล:', err);
             return res.status(500).send('เกิดข้อผิดพลาดขณะสอบถามข้อมูล.');
