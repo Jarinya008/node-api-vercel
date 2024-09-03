@@ -170,7 +170,7 @@ app.post('/forget_password', (req, res) => {
     });
 });
 
-//แรมด้อม เลข 6 หลัก มา 100 ชุด ex /randomLotto?count=50
+//แรมด้อม เลข 6 หลัก มา 100 ชุด ex. /randomLotto?count=50
 //random lotto
 app.get('/randomLotto', (req, res) => {
     const numberOfSets = parseInt(req.query.count) || 100; //รับค่าว่าจะสุ่มเลขกี่ชุด //ค่าเริ่มต้น 100
@@ -210,6 +210,28 @@ app.get('/randomLotto', (req, res) => {
         }
     });
 });
+
+//ค้นหาlotto
+//ex. /searchLotto?number=123
+app.get('/searchLotto', (req, res) => {
+    const lottoNumber = req.query.number || ''; // รับหมายเลขล็อตโต้ที่ต้องการค้นหาจาก query parameter (ค่าเริ่มต้นเป็น empty string)
+    const sqlSearch = "SELECT * FROM Lotto WHERE lotto_number LIKE ?";
+
+    const searchPattern = `%${lottoNumber}%`;
+
+    db.query(sqlSearch, [searchPattern], (err, results) => {
+        if (err) {
+            console.error('Error searching for lotto number:', err);
+            res.status(500).send('An error occurred while searching for the lotto number.');
+        } else if (results.length > 0) {
+            res.json({ message: 'Lotto numbers found.', data: results });
+        } else {
+            res.json({ message: 'No matching lotto numbers found.' });
+        }
+    });
+});
+
+
 
 
 
