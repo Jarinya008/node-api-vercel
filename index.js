@@ -231,6 +231,43 @@ app.get('/searchLotto', (req, res) => {
     });
 });
 
+//เลขลงตะกร้า
+app.post('/Add_to_basket', (req, res) => {
+    const { member_id, lotto_id, lotto_number, price } = req.body;
+
+    const sqlInsert = "INSERT INTO basket (member_id, lotto_id, lotto_number, price) VALUES (?, ?, ?, ?)";
+
+    db.query(sqlInsert, [member_id, lotto_id, lotto_number, price], (err, results) => {
+        if (err) {
+            console.error('Error inserting data:', err);
+            res.status(500).send('An error occurred while purchasing lotto.');
+        } else {
+            res.json({ message: 'Lotto purchased successfully.', basketId: results.insertId });
+        }
+    });
+});
+
+
+//SELECT เลขในตะกร้า ของแต่ละคน 
+app.get('/My_basket/:member_id', (req, res) => {
+    const member_id = req.params.member_id; 
+
+    const sqlSelect = "SELECT * FROM basket WHERE member_id = ?"; 
+
+    db.query(sqlSelect, [member_id], (err, results) => {
+        if (err) {
+            console.error('Error searching for basket:', err);
+            res.status(500).send('An error occurred while searching for the basket.');
+        } else if (results.length > 0) {
+            res.json({ message: 'All Lotto numbers in the basket.', data: results });
+        } else {
+            res.json({ message: 'Empty basket.' });
+        }
+    });
+});
+
+
+
 
 
 
