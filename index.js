@@ -233,16 +233,16 @@ app.get('/searchLotto', (req, res) => {
 
 //เลขลงตะกร้า
 app.post('/Add_to_basket', (req, res) => {
-    const { member_id, lotto_id, lotto_number, price } = req.body;
+    const { member_id, lotto_id, lotto_number } = req.body;
 
-    const sqlInsert = "INSERT INTO basket (member_id, lotto_id, lotto_number, price) VALUES (?, ?, ?, ?)";
+    const sqlInsert = "INSERT INTO basket (member_id, lotto_id, lotto_number, price) VALUES (?, ?, ?, 500)";
 
-    db.query(sqlInsert, [member_id, lotto_id, lotto_number, price], (err, results) => {
+    db.query(sqlInsert, [member_id, lotto_id, lotto_number], (err, results) => {
         if (err) {
             console.error('Error inserting data:', err);
-            res.status(500).send('An error occurred while purchasing lotto.');
+            res.status(500).send('An error occurred while adding to the basket.');
         } else {
-            res.json({ message: 'Lotto purchased successfully.', basketId: results.insertId });
+            res.json({ message: 'Lotto added to basket successfully.', basketId: results.insertId });
         }
     });
 });
