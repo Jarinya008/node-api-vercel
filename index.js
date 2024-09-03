@@ -175,7 +175,7 @@ app.post('/forget_password', (req, res) => {
 app.get('/randomLotto', (req, res) => {
     const numberOfSets = parseInt(req.query.count) || 100; //รับค่าว่าจะสุ่มเลขกี่ชุด //ค่าเริ่มต้น 100
     const sqlSelect = "SELECT lotto_number FROM Lotto";
-    const sqlInsert = "INSERT INTO Lotto (lotto_number) VALUES ?";
+    const sqlInsert = "INSERT INTO Lotto (lotto_number) VALUES ? ";
     
     // Step 1: ดึงข้อมูลที่มียุแล้วในตารางออกมา
     db.query(sqlSelect, (err, results) => {
@@ -215,7 +215,7 @@ app.get('/randomLotto', (req, res) => {
 //ex. /searchLotto?number=123
 app.get('/searchLotto', (req, res) => {
     const lottoNumber = req.query.number || ''; // รับหมายเลขล็อตโต้ที่ต้องการค้นหาจาก query parameter (ค่าเริ่มต้นเป็น empty string)
-    const sqlSearch = "SELECT * FROM Lotto WHERE lotto_number LIKE ?";
+    const sqlSearch = "SELECT * FROM Lotto WHERE lotto_number LIKE ? AND status = 1";
 
     const searchPattern = `%${lottoNumber}%`;
 
