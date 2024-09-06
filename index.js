@@ -126,7 +126,7 @@ app.post('/login', (req, res) => {
 
         if (results.length > 0) {
             //res.status(200).send('เข้าสู่ระบบสำเร็จ');
-            res.json({ message: 'เข้าสู่ระบบสำเร็จ' });
+            res.json('เข้าสู่ระบบสำเร็จ');
         } else {
             res.status(401).send('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
         }
