@@ -390,10 +390,10 @@ app.post('/buy', (req, res) => {
                                         return res.status(500).send('An error occurred while deleting the item from basket.');
                                     }
                                     const sqlUpdateStatus = "UPDATE lotto SET status WHERE lotto_id = ?";
-                                    db.query(sqlDeleteBasket, [lottoId], (err, deleteResults) => {
+                                    db.query(sqlUpdateStatus, [lottoId], (err, upResults) => {
                                         if (err) {
                                             console.error('Error deleting from basket:', err);
-                                            return res.status(500).send('An error occurred while deleting the item from basket.');
+                                            return res.status(500).send('An error occurred while update the item from lotto.');
                                         }
     
                                         res.json({ message: 'successful' });
