@@ -350,7 +350,7 @@ app.post('/buy', (req, res) => {
             const memberMoney = member.money;
 
             // ตรวจสอบข้อมูลล็อตเตอรี่เพื่อดึงราคาและ ID
-            const sqlLotto = "SELECT * FROM lotto WHERE lotto_number = ?";
+            const sqlLotto = "SELECT * FROM basket WHERE lotto_number = ?";
             db.query(sqlLotto, [lotto_number], (err, lottoResults) => {
                 if (err) {
                     console.error('Error searching for lotto price:', err);
