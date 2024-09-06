@@ -124,11 +124,11 @@ app.post('/login', (req, res) => {
             return res.status(500).send('เกิดข้อผิดพลาดขณะสอบถามข้อมูล.');
         }
 
-        // if (results.length > 0) {
-        //     res.status(200).send('เข้าสู่ระบบสำเร็จ');
-        // } else {
-        //     res.status(401).send('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
-        // }
+        if (results.length > 0) {
+            res.status(200).send('เข้าสู่ระบบสำเร็จ');
+        } else {
+            res.status(401).send('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+        }
     });
 });
 
