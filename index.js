@@ -179,10 +179,6 @@ app.get('/randomLotto', (req, res) => {
     
     // Step 1: ดึงข้อมูลที่มียุแล้วในตารางออกมา
     db.query(sqlSelect, (err, results) => {
-        if (err) {
-            console.error('Error fetching data:', err);
-            res.status(500).send('An error occurred while fetching data.');
-        } else {
             const existingNumbers = new Set(results.map(row => row.lotto_number));
             const lottoNumbers = new Set();
 
@@ -207,7 +203,7 @@ app.get('/randomLotto', (req, res) => {
                     res.json({ message: 'Lotto numbers generated and stored successfully.', insertedCount: insertResults.affectedRows });
                 }
             });
-        }
+        
     });
 });
 
