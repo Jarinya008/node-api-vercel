@@ -389,7 +389,7 @@ app.post('/buy', (req, res) => {
                                         console.error('Error deleting from basket:', err);
                                         return res.status(500).send('An error occurred while deleting the item from basket.');
                                     }
-                                    const sqlUpdateStatus = "UPDATE lotto SET status WHERE lotto_id = ?";
+                                    const sqlUpdateStatus = "UPDATE lotto SET status = 0 WHERE lotto_id = ?";
                                     db.query(sqlUpdateStatus, [lottoId], (err, upResults) => {
                                         if (err) {
                                             console.error('Error deleting from basket:', err);
