@@ -283,7 +283,6 @@ app.post('/Add_to_basket', (req, res) => {
 //SELECT เลขในตะกร้า ของแต่ละคน 
 app.get('/My_basket/:member_id', (req, res) => {
     const member_id = req.params.member_id; 
-
     const sqlSelect = "SELECT * FROM basket WHERE member_id = ?"; 
 
     db.query(sqlSelect, [member_id], (err, results) => {
@@ -298,7 +297,17 @@ app.get('/My_basket/:member_id', (req, res) => {
     });
 });
 
-
+app.get('/get_Lotto', (req, res) => {
+    const sql = 'SELECT * FROM lotto'; // Replace 'users' with your table name
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching data:', err);
+            res.status(500).send('An error occurred while fetching data.');
+        } else {
+            res.json(results); // Send the results as a JSON response
+        }
+    });
+});
 
 
 
