@@ -215,7 +215,7 @@ app.get('/randomLotto', (req, res) => {
 //ex. /searchLotto?number=123
 app.get('/searchLotto', (req, res) => {
     const lottoNumber = req.query.number || ''; // รับหมายเลขล็อตโต้ที่ต้องการค้นหาจาก query parameter (ค่าเริ่มต้นเป็น empty string)
-    const sqlSearch = "SELECT * FROM Lotto WHERE lotto_number LIKE ? AND status = 1";
+    const sqlSearch = "SELECT * FROM lotto WHERE lotto_number LIKE ? AND status = 1";
 
     const searchPattern = `%${lottoNumber}%`;
 
