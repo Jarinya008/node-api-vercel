@@ -85,27 +85,40 @@ app.get('/users', (req, res) => {
 // });
 
 app.post('/register', (req, res) => {
-    const { name, email, username, password, phone, money } = req.body; // Accessing all parameters from the request body
+    const { name, email, username, password, phone, money } = req.body;
 
     // Check if any required field is missing
     if (!name || !email || !username || !password || !phone || !money) {
         return res.status(400).send('All fields (name, email, username, password, phone, money) are required');
     }
 
-    // SQL query with placeholders
-    const sql = 'INSERT INTO members (name, email, username, password, phone, money) VALUES (?, ?, ?, ?, ?, ?)';
+    // SQL query to check if the username already exists
+    const checkUsernameSql = 'SELECT * FROM members WHERE username = ?';
 
-    // Execute the query with values
-    db.query(sql, [name, email, username, password, phone, money], (err, results) => {
+    db.query(checkUsernameSql, [username], (err, results) => {
         if (err) {
-            console.error('Error inserting data:', err);
-            return res.status(500).send('An error occurred while inserting data.');
+            console.error('Error checking username:', err);
+            return res.status(500).send('An error occurred while checking the username.');
         }
 
-        res.status(201).send('User registered successfully');
+        if (results.length > 0) {
+            // Username already exists
+            return res.status(409).send('Username already exists. Please choose another username.');
+        } else {
+            // If the username doesn't exist, insert the new user
+            const insertUserSql = 'INSERT INTO members (name, email, username, password, phone, money) VALUES (?, ?, ?, ?, ?, ?)';
+
+            db.query(insertUserSql, [name, email, username, password, phone, money], (err, results) => {
+                if (err) {
+                    console.error('Error inserting data:', err);
+                    return res.status(500).send('An error occurred while inserting data.');
+                }
+
+                res.status(201).send('User registered successfully');
+            });
+        }
     });
 });
-
 app.post('/login', (req, res) => {
     const { username, password } = req.body; // การเข้าถึงพารามิเตอร์จาก request body
 
