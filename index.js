@@ -298,13 +298,26 @@ app.get('/My_basket/:member_id', (req, res) => {
 });
 
 app.get('/get_Lotto', (req, res) => {
-    const sql = 'SELECT * FROM lotto'; // Replace 'users' with your table name
+    const sql = 'SELECT * FROM lotto'; // ดึงข้อมูลทั้งหมดจากตาราง lotto
     db.query(sql, (err, results) => {
         if (err) {
             console.error('Error fetching data:', err);
-            res.status(500).send('An error occurred while fetching data.');
+            res.status(500).send('An error occurred while fetching data.'); // แจ้ง error กรณีเกิดปัญหา
         } else {
-            res.json(results); // Send the results as a JSON response
+            res.json(results); // ส่งผลลัพธ์กลับในรูปแบบ JSON
+        }
+    });
+});
+
+
+app.get('/get_Lotto_status1', (req, res) => {
+    const sql = 'SELECT * FROM lotto where status = 1'; // ดึงข้อมูลทั้งหมดจากตาราง lotto
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching data:', err);
+            res.status(500).send('An error occurred while fetching data.'); // แจ้ง error กรณีเกิดปัญหา
+        } else {
+            res.json(results); // ส่งผลลัพธ์กลับในรูปแบบ JSON
         }
     });
 });
