@@ -361,7 +361,8 @@ app.post('/buy', (req, res) => {
                     const lotto = lottoResults[0];
                     const lottoId = lotto.lotto_id;
                     const lottoPrice = lotto.price;
-
+                    log(memberMoney);
+                    log(lottoPrice);
                     // เปรียบเทียบเงินกับราคา
                     if (memberMoney >= lottoPrice) {
                         // เงินเพียงพอ ทำการซื้อ
