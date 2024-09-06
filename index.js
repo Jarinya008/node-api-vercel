@@ -174,8 +174,8 @@ app.post('/forget_password', (req, res) => {
 //random lotto
 app.get('/randomLotto', (req, res) => {
     const numberOfSets = parseInt(req.query.count) || 100; //รับค่าว่าจะสุ่มเลขกี่ชุด //ค่าเริ่มต้น 100
-    const sqlSelect = "SELECT lotto_number FROM Lotto";
-    const sqlInsert = "INSERT INTO Lotto (lotto_number) VALUES ? ";
+    const sqlSelect = "SELECT lotto_number FROM lotto";
+    const sqlInsert = "INSERT INTO lotto (lotto_number) VALUES ? ";
     
     // Step 1: ดึงข้อมูลที่มียุแล้วในตารางออกมา
     db.query(sqlSelect, (err, results) => {
