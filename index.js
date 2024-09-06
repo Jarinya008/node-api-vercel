@@ -389,8 +389,15 @@ app.post('/buy', (req, res) => {
                                         console.error('Error deleting from basket:', err);
                                         return res.status(500).send('An error occurred while deleting the item from basket.');
                                     }
-
-                                    res.json({ message: 'Purchase successful and item removed from basket.' });
+                                    const sqlUpdateStatus = "UPDATE lotto SET status WHERE lotto_id = ?";
+                                    db.query(sqlDeleteBasket, [lottoId], (err, deleteResults) => {
+                                        if (err) {
+                                            console.error('Error deleting from basket:', err);
+                                            return res.status(500).send('An error occurred while deleting the item from basket.');
+                                        }
+    
+                                        res.json({ message: 'successful' });
+                                    });
                                 });
                             });
                         });
