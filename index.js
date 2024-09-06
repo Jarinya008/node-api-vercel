@@ -172,40 +172,76 @@ app.post('/forget_password', (req, res) => {
 
 //แรมด้อม เลข 6 หลัก มา 100 ชุด ex. /randomLotto?count=50
 //random lotto
-app.get('/randomLotto', (req, res) => {
-    const numberOfSets = parseInt(req.query.count) || 100; //รับค่าว่าจะสุ่มเลขกี่ชุด //ค่าเริ่มต้น 100
-    const sqlSelect = "SELECT lotto_number FROM lotto";
-    const sqlInsert = "INSERT INTO lotto (lotto_number) VALUES ? ";
+// app.get('/randomLotto', (req, res) => {
+//     const numberOfSets = parseInt(req.query.count) || 100; //รับค่าว่าจะสุ่มเลขกี่ชุด //ค่าเริ่มต้น 100
+//     const sqlSelect = "SELECT lotto_number FROM lotto";
+//     const sqlInsert = "INSERT INTO lotto (lotto_number) VALUES ? ";
     
-    // Step 1: ดึงข้อมูลที่มียุแล้วในตารางออกมา
-    db.query(sqlSelect, (err, results) => {
-            const existingNumbers = new Set(results.map(row => row.lotto_number));
-            const lottoNumbers = new Set();
+//     // Step 1: ดึงข้อมูลที่มียุแล้วในตารางออกมา
+//     db.query(sqlSelect, (err, results) => {
+//         if (err) {
+//             console.error('Error fetching data:', err);
+//             res.status(500).send('An error occurred while fetching data.');
+//         } else {
+//             const existingNumbers = new Set(results.map(row => row.lotto_number));
+//             const lottoNumbers = new Set();
 
-            // Step 2: สุ่มเลข 6 หลัก
-            while (lottoNumbers.size < numberOfSets) {
-                const randomNumber = Math.floor(100000 + Math.random() * 900000).toString();
+//             // Step 2: สุ่มเลข 6 หลัก
+//             while (lottoNumbers.size < numberOfSets) {
+//                 const randomNumber = Math.floor(100000 + Math.random() * 900000).toString();
                 
-                // Step 3: เช็คว่าเลขที่สุ่มได้ ซ้ำกับอันเดิมม้้ย (แล้วเก็บใน lottoNumbers)
-                if (!existingNumbers.has(randomNumber)) {
-                    lottoNumbers.add(randomNumber);
-                }
-            }
+//                 // Step 3: เช็คว่าเลขที่สุ่มได้ ซ้ำกับอันเดิมม้้ย (แล้วเก็บใน lottoNumbers)
+//                 if (!existingNumbers.has(randomNumber)) {
+//                     lottoNumbers.add(randomNumber);
+//                 }
+//             }
 
-            const lottoArray = Array.from(lottoNumbers).map(number => [number]);
+//             const lottoArray = Array.from(lottoNumbers).map(number => [number]);
 
-            // Step 4: Insert 
-            db.query(sqlInsert, [lottoArray], (err, insertResults) => {
-                if (err) {
-                    console.error('Error inserting data:', err);
-                    res.status(500).send('An error occurred while inserting data.');
-                } else {
-                    res.json({ message: 'Lotto numbers generated and stored successfully.', insertedCount: insertResults.affectedRows });
-                }
-            });
-        
+//             // Step 4: Insert 
+//             db.query(sqlInsert, [lottoArray], (err, insertResults) => {
+//                 if (err) {
+//                     console.error('Error inserting data:', err);
+//                     res.status(500).send('An error occurred while inserting data.');
+//                 } else {
+//                     res.json({ message: 'Lotto numbers generated and stored successfully.', insertedCount: insertResults.affectedRows });
+//                 }
+//             });
+//         }
+//     });
+// });
+
+
+app.get('/randomLotto', (req, res) => {
+    const numberOfSets = parseInt(req.query.count) || 100; // จำนวนชุดที่ต้องการสุ่ม (ค่าเริ่มต้นคือ 100)
+    const sqlSelect = "SELECT lotto_number FROM lotto"; // คำสั่ง SQL สำหรับดึงเลขที่มีอยู่
+    const sqlInsert = "INSERT INTO lotto (lotto_number) VALUES ?"; // คำสั่ง SQL สำหรับแทรกข้อมูล
+
+    // Step 1: สุ่มเลข 6 หลัก
+    const lottoNumbers = new Set();
+
+    while (lottoNumbers.size < numberOfSets) {
+        const randomNumber = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // ตรวจสอบว่าเลขนี้ซ้ำกับเลขที่มีอยู่หรือไม่
+        lottoNumbers.add(randomNumber);
+    }
+
+    const lottoArray = Array.from(lottoNumbers).map(number => [number]);
+
+    // Step 2: บันทึกเลขที่สุ่มได้ลงในตาราง
+    db.query(sqlInsert, [lottoArray], (err, insertResults) => {
+        if (err) {
+            console.error('Error inserting data:', err);
+            return res.status(500).send('An error occurred while inserting data.');
+        }
+
+        res.json({ message: 'Lotto numbers generated and stored successfully.', insertedCount: insertResults.affectedRows });
     });
 });
+
+
+
 
 //ค้นหาlotto
 //ex. /searchLotto?number=123
