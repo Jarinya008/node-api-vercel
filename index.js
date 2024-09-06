@@ -84,8 +84,8 @@ app.get('/users', (req, res) => {
 //     }
 // });
 
-app.post('/register/:name/:email/:username/:password/:phone/:money', (req, res) => {
-    const { name, email, username, password, phone, money } = req.params; // Accessing all parameters from the URL
+app.post('/register', (req, res) => {
+    const { name, email, username, password, phone, money } = req.body; // Accessing all parameters from the request body
 
     // Check if any required field is missing
     if (!name || !email || !username || !password || !phone || !money) {
