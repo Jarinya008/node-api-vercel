@@ -310,6 +310,11 @@ app.get('/My_basket/:member_id', (req, res) => {
     });
 });
 
+app.post('/buy', (req, res) => {
+    const { name, lotto_number } = req.body;
+});
+
+//lotto ทั้งหมด
 app.get('/get_Lotto', (req, res) => {
     const sql = 'SELECT * FROM lotto'; // ดึงข้อมูลทั้งหมดจากตาราง lotto
     db.query(sql, (err, results) => {
@@ -322,7 +327,7 @@ app.get('/get_Lotto', (req, res) => {
     });
 });
 
-
+//lottoที่ยังไม่ขาย
 app.get('/get_Lotto_status1', (req, res) => {
     const sql = 'SELECT * FROM lotto where status = 1'; // ดึงข้อมูลทั้งหมดจากตาราง lotto
     db.query(sql, (err, results) => {
@@ -334,6 +339,8 @@ app.get('/get_Lotto_status1', (req, res) => {
         }
     });
 });
+
+
 
 
 
