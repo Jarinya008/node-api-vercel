@@ -300,6 +300,23 @@ app.get('/My_basket/:member_id', (req, res) => {
     });
 });
 
+// SELECT เลขที่ซื้อแล้ว ของแต่ละคน 
+app.get('/My_basket/:member_id', (req, res) => {
+    const member_id = req.params.member_id; 
+    const sqlSelect = "SELECT * FROM buy WHERE member_id = ?"; 
+
+    db.query(sqlSelect, [member_id], (err, results) => {
+        if (err) {
+            console.error('Error searching for basket:', err);
+            res.status(500).send('An error occurred while searching for the basket.');
+        } else if (results.length > 0) {
+            res.json({ message: 'All Lotto numbers in the basket.', data: results });
+        } else {
+            res.json({ message: 'Empty basket.' });
+        }
+    });
+});
+
 // app.post('/buy', (req, res) => {
 //     const { name, lotto_number } = req.body;
 //     const sqlMem = "SELECT member_id,money FROM members WHERE name = ?";
