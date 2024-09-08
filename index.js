@@ -301,7 +301,7 @@ app.get('/My_basket/:member_id', (req, res) => {
 });
 
 // SELECT เลขที่ซื้อแล้ว ของแต่ละคน 
-app.get('/My_basket/:member_id', (req, res) => {
+app.get('/My_buyLotto/:member_id', (req, res) => {
     const member_id = req.params.member_id; 
     const sqlSelect = "SELECT * FROM buy WHERE member_id = ?"; 
 
