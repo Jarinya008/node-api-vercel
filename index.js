@@ -293,7 +293,7 @@ app.get('/My_basket/:member_id', (req, res) => {
             console.error('Error searching for basket:', err);
             res.status(500).send('An error occurred while searching for the basket.');
         } else if (results.length > 0) {
-            res.json({ message: 'All Lotto numbers in the basket.', data: results });
+            res.json({ message: 'All Lotto numbers in the basket.', results });
         } else {
             res.json({ message: 'Empty basket.' });
         }
@@ -310,7 +310,7 @@ app.get('/My_buyLotto/:member_id', (req, res) => {
             console.error('Error searching for basket:', err);
             res.status(500).send('An error occurred while searching for the basket.');
         } else if (results.length > 0) {
-            res.json({ message: 'All Lotto numbers in the basket.', data: results });
+            res.json({ message: 'All Lotto numbers in the basket.', results });
         } else {
             res.json({ message: 'Empty basket.' });
         }
