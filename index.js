@@ -257,13 +257,12 @@ app.get('/searchLotto', (req, res) => {
             console.error('Error searching for lotto number:', err);
             res.status(500).send('An error occurred while searching for the lotto number.');
         } else if (results.length > 0) {
-            res.json(results); // ส่งผลลัพธ์ JSON 
+            res.json({ data: results });
         } else {
-            res.json([]); // ส่ง array ว่างในกรณีที่ไม่พบข้อมูล
+            res.json({ message: 'No matching lotto numbers found.' });
         }
     });
 });
-
 
 //เลขลงตะกร้า
 app.post('/Add_to_basket', (req, res) => {
@@ -292,7 +291,7 @@ app.get('/My_basket/:member_id', (req, res) => {
             console.error('Error searching for basket:', err);
             res.status(500).send('An error occurred while searching for the basket.');
         } else if (results.length > 0) {
-            res.json(results);
+            res.json({ message: 'All Lotto numbers in the basket.', data: results });
         } else {
             res.json({ message: 'Empty basket.' });
         }
@@ -309,7 +308,7 @@ app.get('/My_buyLotto/:member_id', (req, res) => {
             console.error('Error searching for basket:', err);
             res.status(500).send('An error occurred while searching for the basket.');
         } else if (results.length > 0) {
-            res.json(results);
+            res.json({ message: 'All Lotto numbers in the basket.', data: results });
         } else {
             res.json({ message: 'Empty basket.' });
         }
@@ -461,6 +460,11 @@ app.get('/get_Lotto_status1', (req, res) => {
     });
 });
 
+
+//ออกรางวัล(ขายแล้ว)
+app.post('reward_buy',(req,res) => {
+
+});
 
 
 
