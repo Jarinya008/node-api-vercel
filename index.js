@@ -431,6 +431,90 @@ app.delete('/removeLottoFromBasket', (req, res) => {
     });
 });
 
+//เติมเงิน
+app.post('/addWallet', (req, res) => {
+    const { member_id, amount } = req.body;
+
+    // ตรวจสอบว่ามีข้อมูลที่ต้องการครบหรือไม่
+    if (!member_id || !amount) {
+        return res.status(400).send('Member ID และจำนวนเงินต้องถูกระบุ');
+    }
+
+    // select เงินเดิม
+    const sqlSelect = "SELECT money FROM members WHERE member_id = ?";
+    db.query(sqlSelect, [member_id], (err, memberResults) => {
+        if (err) {
+            console.error('Error selecting member money:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการค้นหายอดเงินของสมาชิก');
+        }
+
+        if (memberResults.length > 0) {
+            const currentMoney = memberResults[0].money;
+
+            // บวกจำนวนเงินใหม่
+            const updatedMoney = currentMoney + amount;
+
+            //อัปเดทยอดเงินของสมาชิก
+            const sqlUpdate = "UPDATE members SET money = ? WHERE member_id = ?";
+            db.query(sqlUpdate, [updatedMoney, member_id], (err, updateResults) => {
+                if (err) {
+                    console.error('Error updating member money:', err);
+                    return res.status(500).send('เกิดข้อผิดพลาดในการอัปเดทยอดเงินของสมาชิก');
+                }
+
+                res.json({ message: 'ยอดเงินถูกเพิ่มเรียบร้อยแล้ว', updatedMoney });
+            });
+        } else {
+            res.status(404).send('ไม่พบสมาชิกที่ระบุ');
+        }
+    });
+});
+
+
+//ถอนเงิน 
+app.post('/Withdraw_money',(req, res)=>{
+        const { member_id, amount } = req.body;
+
+    // ตรวจสอบว่ามีข้อมูลที่ต้องการครบหรือไม่
+    if (!member_id || !amount) {
+        return res.status(400).send('Member ID และจำนวนเงินต้องถูกระบุ');
+    }
+
+    // select เงินเดิม
+    const sqlSelect = "SELECT money FROM members WHERE member_id = ?";
+    db.query(sqlSelect, [member_id], (err, memberResults) => {
+        if (err) {
+            console.error('Error selecting member money:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการค้นหายอดเงินของสมาชิก');
+        }
+
+        if (memberResults.length > 0) {
+            const currentMoney = memberResults[0].money;
+            
+            //ถ้าเงินมี >= 100 ค่อยถอนได้
+            if(memberResults >= 100 ){
+                // หักเงินออก
+                const updatedMoney = currentMoney - amount;
+                
+                //อัปเดทยอดเงินของสมาชิก
+                const sqlUpdate = "UPDATE members SET money = ? WHERE member_id = ?";
+            db.query(sqlUpdate, [updatedMoney, member_id], (err, updateResults) => {
+                if (err) {
+                    console.error('Error updating member money:', err);
+                    return res.status(500).send('เกิดข้อผิดพลาดในการอัปเดทยอดเงินของสมาชิก');
+                 }
+                     res.json({ message: 'ยอดเงินถูกเพิ่มเรียบร้อยแล้ว', updatedMoney });
+                 });
+                  } else {
+                     res.status(404).send('ไม่พบสมาชิกที่ระบุ');
+                 }
+        }else{
+            res.json({ message: 'ยอดเงินขั้นต่ำไม่พอสำหรับถอนเงิน' });
+        }
+    });
+});
+
+
 //สุ่มรางวัลจากทั้งหมด
 app.get('/award_lotto_all', (req, res) => {
     const sql = `
