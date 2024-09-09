@@ -287,7 +287,7 @@ app.post('/Add_to_basket', (req, res) => {
             console.error('Error inserting data:', err);
             res.status(500).send('An error occurred while adding to the basket.');
         } else {
-            res.json({ message: 'Lotto added to basket successfully.', basketId: results.insertId });
+            res.json({ message: 'Lotto added to basket successfully.',results});
         }
     });
 });
