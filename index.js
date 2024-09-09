@@ -463,7 +463,10 @@ app.get('/get_Lotto_status1', (req, res) => {
 });
 
 
-//ออกรางวัล
+//ออกรางวัล(ขายแล้ว)
+app.post('reward_buy',(req,res) => {
+
+});
 
 
 
