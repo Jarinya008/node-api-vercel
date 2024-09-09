@@ -266,13 +266,12 @@ app.get('/searchLotto', (req, res) => {
         if (err) {
             console.error('Error searching for lotto number:', err);
             res.status(500).send('An error occurred while searching for the lotto number.');
-        } else if (results.length > 0) {
-            res.json(results); // ส่งผลลัพธ์ JSON 
         } else {
-            res.json([]); // ส่ง array ว่างในกรณีที่ไม่พบข้อมูล
+            res.json(results); // ส่งผลลัพธ์ JSON
         }
     });
 });
+
 
 
 
@@ -443,7 +442,6 @@ app.post('/buy', (req, res) => {
         }
     });
 });
-
 
 
 //lotto ทั้งหมด
