@@ -258,7 +258,7 @@ app.get('/searchLotto', (req, res) => {
     
     // เพิ่มเงื่อนไขการค้นหาให้กับคำสั่ง SQL
     if (searchTerms.length > 0) {
-        sqlSearch += ' AND (' + searchTerms.map((_, i) => `lotto_number LIKE ?`).join(' OR ') + ')';
+        sqlSearch += ' AND (' + searchTerms.map((_, i) => `lotto_number LIKE ?`).join(' AND ') + ')';
         sqlParams = searchTerms;
     }
 
