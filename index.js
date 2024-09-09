@@ -265,7 +265,7 @@ app.get('/searchLotto', (req, res) => {
         }
     });
 });
-;
+
 
 //เลขลงตะกร้า
 app.post('/Add_to_basket', (req, res) => {
