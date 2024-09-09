@@ -429,7 +429,7 @@ app.delete('/removeLottoFromBasket', (req, res) => {
 });
 
 //สุ่มรางวัลจากทั้งหมด
-app.post('/award_lotto_all', (req, res) => {
+app.get('/award_lotto_all', (req, res) => {
     const sql = `
         SELECT * 
         FROM lotto 
