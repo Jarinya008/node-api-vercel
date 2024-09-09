@@ -268,25 +268,13 @@ app.get('/searchLotto', (req, res) => {
         if (err) {
             console.error('Error searching for lotto number:', err);
             res.status(500).send('An error occurred while searching for the lotto number.');
-<<<<<<< HEAD
         } else {
             res.json(results); // ส่งผลลัพธ์ JSON
-=======
-        } else if (results.length > 0) {
-            res.json({ data: results });
-        } else {
-            res.json({ message: 'No matching lotto numbers found.' });
->>>>>>> 60deafbdca8602b09acc6ea4646eb09b5b77755c
         }
     });
 });
 
-<<<<<<< HEAD
 
-
-
-=======
->>>>>>> 60deafbdca8602b09acc6ea4646eb09b5b77755c
 //เลขลงตะกร้า
 app.post('/Add_to_basket', (req, res) => {
     const { member_id, lotto_id, lotto_number } = req.body;
