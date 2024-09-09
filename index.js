@@ -244,8 +244,6 @@ app.get('/randomLotto', (req, res) => {
 });
 
 
-
-
 //ค้นหาlotto
 //ex. /searchLotto?number=123
 app.get('/searchLotto', (req, res) => {
