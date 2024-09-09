@@ -55,34 +55,7 @@ app.get('/users', (req, res) => {
         }
     });
 });
-// app.post('/register', async (req, res) => {
-//     const { username, password } = req.body; // Assuming you send username and password in the body
 
-//     if (!username || !password) {
-//         return res.status(400).send('Username and password are required');
-//     }
-
-//     try {
-//         // Hash the password
-//         const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
-
-//         // SQL query with placeholders
-//         const sql = 'INSERT INTO members (username, password) VALUES (?, ?)';
-
-//         // Execute the query with values
-//         db.query(sql, [username, hashedPassword], (err, results) => {
-//             if (err) {
-//                 console.error('Error inserting data:', err);
-//                 return res.status(500).send('An error occurred while inserting data.');
-//             }
-
-//             res.status(201).send('User registered successfully');
-//         });
-//     } catch (err) {
-//         console.error('Error hashing password:', err);
-//         res.status(500).send('An error occurred while processing the request.');
-//     }
-// });
 
 app.post('/register', (req, res) => {
     const { name, email, username, password, phone, money } = req.body; // Accessing all parameters from the request body
@@ -172,47 +145,6 @@ app.post('/forget_password', (req, res) => {
         }
     });
 });
-
-//แรมด้อม เลข 6 หลัก มา 100 ชุด ex. /randomLotto?count=50
-//random lotto
-// app.get('/randomLotto', (req, res) => {
-//     const numberOfSets = parseInt(req.query.count) || 100; //รับค่าว่าจะสุ่มเลขกี่ชุด //ค่าเริ่มต้น 100
-//     const sqlSelect = "SELECT lotto_number FROM lotto";
-//     const sqlInsert = "INSERT INTO lotto (lotto_number) VALUES ? ";
-    
-//     // Step 1: ดึงข้อมูลที่มียุแล้วในตารางออกมา
-//     db.query(sqlSelect, (err, results) => {
-//         if (err) {
-//             console.error('Error fetching data:', err);
-//             res.status(500).send('An error occurred while fetching data.');
-//         } else {
-//             const existingNumbers = new Set(results.map(row => row.lotto_number));
-//             const lottoNumbers = new Set();
-
-//             // Step 2: สุ่มเลข 6 หลัก
-//             while (lottoNumbers.size < numberOfSets) {
-//                 const randomNumber = Math.floor(100000 + Math.random() * 900000).toString();
-                
-//                 // Step 3: เช็คว่าเลขที่สุ่มได้ ซ้ำกับอันเดิมม้้ย (แล้วเก็บใน lottoNumbers)
-//                 if (!existingNumbers.has(randomNumber)) {
-//                     lottoNumbers.add(randomNumber);
-//                 }
-//             }
-
-//             const lottoArray = Array.from(lottoNumbers).map(number => [number]);
-
-//             // Step 4: Insert 
-//             db.query(sqlInsert, [lottoArray], (err, insertResults) => {
-//                 if (err) {
-//                     console.error('Error inserting data:', err);
-//                     res.status(500).send('An error occurred while inserting data.');
-//                 } else {
-//                     res.json({ message: 'Lotto numbers generated and stored successfully.', insertedCount: insertResults.affectedRows });
-//                 }
-//             });
-//         }
-//     });
-// });
 
 
 app.get('/randomLotto', (req, res) => {
@@ -469,6 +401,31 @@ app.get('/get_Lotto_status1', (req, res) => {
     });
 });
 
+//ลบ lotto ออกจากตระกร้า
+app.delete('/removeLottoFromBasket', (req, res) => {
+    const { lotto_id, member_id } = req.body; // รับข้อมูลจาก body ของคำขอ
+
+    if (!lotto_id || !member_id) {
+        return res.status(400).send('หมายเลขล็อตโต้และ member ID ต้องถูกระบุ');
+    }
+
+    // คำสั่ง SQL สำหรับลบล็อตโต้จากตะกร้า
+    const sqlDelete = "DELETE FROM basket WHERE lotto_number = ? AND member_id = ?";
+
+    db.query(sqlDelete, [lotto_id, member_id], (err, results) => {
+        if (err) {
+            console.error('Error removing lotto from basket:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการลบล็อตโต้จากตะกร้า');
+        }
+
+        // ตรวจสอบว่ามีการลบแถวหรือไม่
+        if (results.affectedRows > 0) {
+            res.send('ล็อตโต้ถูกลบออกจากตะกร้าเรียบร้อยแล้ว');
+        } else {
+            res.status(404).send('ไม่พบล็อตโต้ในตะกร้าสำหรับสมาชิกที่ระบุ');
+        }
+    });
+});
 
 
 
