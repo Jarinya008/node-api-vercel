@@ -297,7 +297,7 @@ app.get('/My_buyLotto/:member_id', (req, res) => {
 app.post('/buy', (req, res) => {
     const { member_id, lotto_id } = req.body;
 
-    // ตรวจสอบข้อมูลของสมาชิก
+    // ตรวจสอบสมาชิก และ select เอาเงินสมาชิกออกมา
     const sqlMem = "SELECT member_id, money FROM members WHERE member_id = ?";
     db.query(sqlMem, [member_id], (err, memberResults) => {
         if (err) {
@@ -317,8 +317,8 @@ app.post('/buy', (req, res) => {
             if (memberMoney >= lottoPrice) {
                 // เงินเพียงพอ ทำการซื้อ
                 // ตรวจสอบข้อมูลล็อตเตอรี่
-                const sqlLotto = "SELECT lotto_number FROM basket WHERE lotto_id = ?";
-                db.query(sqlLotto, [lotto_id], (err, lottoResults) => {
+                const sqlLotto = "SELECT lotto_number FROM basket WHERE lotto_id = ? AND member_id = ?";
+                db.query(sqlLotto, [lotto_id,member_id], (err, lottoResults) => {
                     if (err) {
                         console.error('Error searching for lotto number:', err);
                         return res.status(500).send('An error occurred while searching for the lotto number.');
