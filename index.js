@@ -295,11 +295,11 @@ app.get('/My_buyLotto/:member_id', (req, res) => {
 
 
 app.post('/buy', (req, res) => {
-    const { name, lotto_number } = req.body;
+    const { member_id, lotto_id } = req.body;
 
     // ตรวจสอบข้อมูลของสมาชิก
-    const sqlMem = "SELECT member_id, money FROM members WHERE name = ?";
-    db.query(sqlMem, [name], (err, memberResults) => {
+    const sqlMem = "SELECT member_id, money FROM members WHERE member_id = ?";
+    db.query(sqlMem, [member_id], (err, memberResults) => {
         if (err) {
             console.error('Error searching for member:', err);
             return res.status(500).send('An error occurred while searching for the member.');
@@ -308,66 +308,69 @@ app.post('/buy', (req, res) => {
         if (memberResults.length > 0) {
             const member = memberResults[0];
             const memberMoney = member.money;
+            const lottoPrice = 80; // ตั้งราคาเป็น 80 บาทตามที่กำหนด
 
-            // ตรวจสอบข้อมูลล็อตเตอรี่เพื่อดึงราคาและ ID
-            const sqlLotto = "SELECT * FROM basket WHERE lotto_number = ?";
-            db.query(sqlLotto, [lotto_number], (err, lottoResults) => {
-                if (err) {
-                    console.error('Error searching for lotto price:', err);
-                    return res.status(500).send('An error occurred while searching for the lotto price.');
-                }
+            console.log(memberMoney);
+            console.log(lottoPrice);
 
-                if (lottoResults.length > 0) {
-                    const lotto = lottoResults[0];
-                    const lottoId = lotto.lotto_id;
-                    const lottoPrice = lotto.price;
-                    console.log(memberMoney);
-                    console.log(lottoPrice);
-                    // เปรียบเทียบเงินกับราคา
-                    if (memberMoney >= lottoPrice) {
-                        // เงินเพียงพอ ทำการซื้อ
+            // เปรียบเทียบเงินกับราคา
+            if (memberMoney >= lottoPrice) {
+                // เงินเพียงพอ ทำการซื้อ
+                // ตรวจสอบข้อมูลล็อตเตอรี่
+                const sqlLotto = "SELECT lotto_number FROM basket WHERE lotto_id = ?";
+                db.query(sqlLotto, [lotto_id], (err, lottoResults) => {
+                    if (err) {
+                        console.error('Error searching for lotto number:', err);
+                        return res.status(500).send('An error occurred while searching for the lotto number.');
+                    }
+
+                    if (lottoResults.length > 0) {
+                        const lotto = lottoResults[0].lotto_number;
+
                         // คำสั่ง SQL สำหรับการซื้อ
                         const sqlInsert = "INSERT INTO buy (member_id, lotto_id, lotto_number, price, date_buy) VALUES (?, ?, ?, ?, NOW())";
-                        db.query(sqlInsert, [member.member_id, lottoId, lotto_number, lottoPrice], (err, insertResults) => {
+                        db.query(sqlInsert, [member_id, lotto_id, lotto, lottoPrice], (err, insertResults) => {
                             if (err) {
                                 console.error('Error inserting buy record:', err);
                                 return res.status(500).send('An error occurred while processing the purchase.');
                             }
 
-                            // ลดเงินของสมาชิก
+                            // ลดเงินของสมาชิก 80 บาท
                             const sqlUpdateMoney = "UPDATE members SET money = money - ? WHERE member_id = ?";
-                            db.query(sqlUpdateMoney, [lottoPrice, member.member_id], (err, updateResults) => {
+                            db.query(sqlUpdateMoney, [lottoPrice, member_id], (err, updateResults) => {
                                 if (err) {
                                     console.error('Error updating member money:', err);
                                     return res.status(500).send('An error occurred while updating the member\'s money.');
                                 }
 
                                 // ลบข้อมูลล็อตเตอรี่จากตาราง basket
-                                const sqlDeleteBasket = "DELETE FROM basket WHERE member_id = ? AND lotto_number = ?";
-                                db.query(sqlDeleteBasket, [member.member_id, lotto_number], (err, deleteResults) => {
+                                const sqlDeleteBasket = "DELETE FROM basket WHERE member_id = ? AND lotto_id = ?";
+                                db.query(sqlDeleteBasket, [member_id, lotto_id], (err, deleteResults) => {
                                     if (err) {
                                         console.error('Error deleting from basket:', err);
                                         return res.status(500).send('An error occurred while deleting the item from basket.');
                                     }
+
+                                    // อัพเดทสถานะล็อตโต้เป็น 0
                                     const sqlUpdateStatus = "UPDATE lotto SET status = 0 WHERE lotto_id = ?";
-                                    db.query(sqlUpdateStatus, [lottoId], (err, upResults) => {
+                                    db.query(sqlUpdateStatus, [lotto_id], (err, upResults) => {
                                         if (err) {
-                                            console.error('Error deleting from basket:', err);
-                                            return res.status(500).send('An error occurred while update the item from lotto.');
+                                            console.error('Error updating lotto status:', err);
+                                            return res.status(500).send('An error occurred while updating the lotto status.');
                                         }
-    
+
                                         res.json({ message: 'successful' });
                                     });
                                 });
                             });
                         });
                     } else {
-                        res.status(400).send('Insufficient funds.');
+                        res.status(404).send('Lotto number not found.');
                     }
-                } else {
-                    res.status(404).send('Lotto number not found.');
-                }
-            });
+                });
+            } else {
+                res.status(400).send('Insufficient funds.');
+            }
         } else {
             res.status(404).send('Member not found.');
         }
