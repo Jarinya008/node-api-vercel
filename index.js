@@ -388,6 +388,7 @@ app.get('/get_Lotto', (req, res) => {
     });
 });
 
+
 //lottoที่ยังไม่ขาย
 app.get('/get_Lotto_status1', (req, res) => {
     const sql = 'SELECT * FROM lotto where status = 1'; // ดึงข้อมูลทั้งหมดจากตาราง lotto
@@ -410,7 +411,7 @@ app.delete('/removeLottoFromBasket', (req, res) => {
     }
 
     // คำสั่ง SQL สำหรับลบล็อตโต้จากตะกร้า
-    const sqlDelete = "DELETE FROM basket WHERE lotto_number = ? AND member_id = ?";
+    const sqlDelete = "DELETE FROM basket WHERE lotto_id = ? AND member_id = ?";
 
     db.query(sqlDelete, [lotto_id, member_id], (err, results) => {
         if (err) {
