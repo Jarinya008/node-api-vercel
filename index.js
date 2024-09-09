@@ -210,7 +210,7 @@ app.get('/searchLotto', (req, res) => {
 app.post('/Add_to_basket', (req, res) => {
     const { member_id, lotto_id, lotto_number } = req.body;
 
-    const sqlInsert = "INSERT INTO basket (member_id, lotto_id, lotto_number, price) VALUES (?, ?, ?, 500)";
+    const sqlInsert = "INSERT INTO basket (member_id, lotto_id, lotto_number, price) VALUES (?, ?, ?, 80)";
 
     db.query(sqlInsert, [member_id, lotto_id, lotto_number], (err, results) => {
         if (err) {
