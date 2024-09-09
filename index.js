@@ -430,7 +430,7 @@ app.delete('/removeLottoFromBasket', (req, res) => {
 //สุ่มรางวัลจากทั้งหมด
 app.post('/award_lotto_all', (req, res) => {
     const sql = `
-        SELECT lotto_id 
+        SELECT * 
         FROM lotto 
         WHERE lotto_id NOT IN (SELECT lotto_id FROM award)
         ORDER BY RAND() 
