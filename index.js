@@ -250,11 +250,21 @@ app.get('/randomLotto', (req, res) => {
 //ex. /searchLotto?number=123
 app.get('/searchLotto', (req, res) => {
     const lottoNumber = req.query.number || ''; // รับหมายเลขล็อตโต้ที่ต้องการค้นหาจาก query parameter (ค่าเริ่มต้นเป็น empty string)
-    const sqlSearch = "SELECT * FROM lotto WHERE lotto_number LIKE ? AND status = 1";
 
-    const searchPattern = `%${lottoNumber}%`;
+    // แบ่งหมายเลขล็อตโต้ออกเป็นตัวเลขย่อย
+    const searchTerms = lottoNumber.split('').map(num => `%${num}%`);
+    
+    // สร้างคำสั่ง SQL และ array สำหรับค่าพารามิเตอร์
+    let sqlSearch = "SELECT * FROM lotto WHERE status = 1";
+    let sqlParams = [];
+    
+    // เพิ่มเงื่อนไขการค้นหาให้กับคำสั่ง SQL
+    if (searchTerms.length > 0) {
+        sqlSearch += ' AND (' + searchTerms.map((_, i) => `lotto_number LIKE ?`).join(' AND ') + ')';
+        sqlParams = searchTerms;
+    }
 
-    db.query(sqlSearch, [searchPattern], (err, results) => {
+    db.query(sqlSearch, sqlParams, (err, results) => {
         if (err) {
             console.error('Error searching for lotto number:', err);
             res.status(500).send('An error occurred while searching for the lotto number.');
@@ -277,7 +287,7 @@ app.post('/Add_to_basket', (req, res) => {
             console.error('Error inserting data:', err);
             res.status(500).send('An error occurred while adding to the basket.');
         } else {
-            res.json({ message: 'Lotto added to basket successfully.', basketId: results.insertId });
+            res.json({ message: 'Lotto added to basket successfully.',results});
         }
     });
 });
