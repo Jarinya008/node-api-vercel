@@ -433,7 +433,7 @@ app.post('/award_lotto_all', (req, res) => {
     const sql = `
         SELECT * 
         FROM lotto 
-        WHERE lotto_id NOT IN (SELECT lotto_id FROM award)
+        WHERE lotto_id NOT IN (SELECT lotto_id FROM reward)
         ORDER BY RAND() 
         LIMIT 1`; // สุ่ม 1 ค่า
     db.query(sql, (err, results) => {
