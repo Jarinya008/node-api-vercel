@@ -540,28 +540,44 @@ app.post('/Withdraw_money', (req, res) => {
 });
 
 
-
+const round = 1;
 //สุ่มรางวัลจากทั้งหมด
 app.post('/award_lotto_all', (req, res) => {
-    const { price } = req.body;
-    const sql = `
-        SELECT * 
-        FROM lotto 
-        WHERE lotto_id NOT IN (SELECT lotto_id FROM reward)
-        ORDER BY RAND() 
-        LIMIT 1`; // สุ่ม 1 ค่า
-    db.query(sql, (err, results) => {
+    //const { prize_order, price } = req.body;
+    const sqlCountRows = "COUNT(*) FROM reward";
+    db.query(sqlCountRows, (err, resultsRow) => {
         if (err) {
             console.error('Error fetching data:', err);
             res.status(500).send('An error occurred while fetching data.');
         } else {
-            if (results.length > 0) {
+            if (resultsRow.length == 0) {
                 res.json(results[0]); // ส่งค่า lotto_id ที่สุ่มได้
             } else {
                 res.status(404).send('No eligible lotto_id found.');
             }
         }
     });
+
+
+
+    // const sql = `
+    //     SELECT * 
+    //     FROM lotto 
+    //     WHERE lotto_id NOT IN (SELECT lotto_id FROM reward)
+    //     ORDER BY RAND() 
+    //     LIMIT 1`; // สุ่ม 1 ค่า
+    // db.query(sql, (err, results) => {
+    //     if (err) {
+    //         console.error('Error fetching data:', err);
+    //         res.status(500).send('An error occurred while fetching data.');
+    //     } else {
+    //         if (results.length > 0) {
+    //             res.json(results[0]); // ส่งค่า lotto_id ที่สุ่มได้
+    //         } else {
+    //             res.status(404).send('No eligible lotto_id found.');
+    //         }
+    //     }
+    // });
 });
 
 
