@@ -56,6 +56,25 @@ app.get('/users', (req, res) => {
     });
 });
 
+// เส้นทางใหม่สำหรับดึงโปรไฟล์ผู้ใช้
+app.get('/getUserProfile/:member_id', (req, res) => {
+    const memberId = req.params.member_id;
+  
+    const sqlSelect = "SELECT * FROM members WHERE member_id = ?";
+    db.query(sqlSelect, [memberId], (err, results) => {
+      if (err) {
+        console.error('Error fetching user profile:', err);
+        return res.status(500).send('Error fetching user profile');
+      }
+  
+      if (results.length > 0) {
+        res.json(results[0]);
+      } else {
+        res.status(404).send('User not found');
+      }
+    });
+  });  
+
 
 app.post('/register', (req, res) => {
     const { name, email, username, password, phone, money } = req.body; // Accessing all parameters from the request body
