@@ -226,7 +226,12 @@ app.post('/Add_to_basket', (req, res) => {
 //SELECT เลขในตะกร้า ของแต่ละคน 
 app.get('/My_basket/:member_id', (req, res) => {
     const member_id = req.params.member_id; 
-    const sqlSelect = "SELECT * FROM basket WHERE member_id = ?"; 
+    const sqlSelect = `
+        SELECT basket.*, buy.status 
+        FROM basket 
+        JOIN buy ON basket.lotto_id = buy.lotto_id 
+        WHERE basket.member_id = ? AND buy.status = 1
+    `;
 
     db.query(sqlSelect, [member_id], (err, results) => {
         if (err) {
@@ -239,6 +244,7 @@ app.get('/My_basket/:member_id', (req, res) => {
         }
     });
 });
+
 
 // SELECT เลขที่ซื้อแล้ว ของแต่ละคน 
 app.get('/My_buyLotto/:member_id', (req, res) => {
