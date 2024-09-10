@@ -517,7 +517,7 @@ app.post('/Withdraw_money',(req, res)=>{
             const currentMoney = memberResults[0].money;
             
             //ถ้าเงินมี >= 100 ค่อยถอนได้
-            if(memberResults >= 100 ){
+            if(memberResults >= 100 && amount<= memberResults){
                 // หักเงินออก
                 const updatedMoney = currentMoney - amount;
                 
