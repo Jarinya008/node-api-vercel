@@ -229,7 +229,7 @@ app.get('/My_basket/:member_id', (req, res) => {
     const sqlSelect = `
         SELECT basket.*, lotto.status 
         FROM basket 
-        JOIN buy ON basket.lotto_id = lotto.lotto_id 
+        JOIN lotto ON basket.lotto_id = lotto.lotto_id 
         WHERE basket.member_id = ? AND lotto.status = 1
     `;
 
