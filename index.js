@@ -227,10 +227,10 @@ app.post('/Add_to_basket', (req, res) => {
 app.get('/My_basket/:member_id', (req, res) => {
     const member_id = req.params.member_id; 
     const sqlSelect = `
-        SELECT basket.*, buy.status 
+        SELECT basket.*, lotto.status 
         FROM basket 
-        JOIN buy ON basket.lotto_id = buy.lotto_id 
-        WHERE basket.member_id = ? AND buy.status = 1
+        JOIN buy ON basket.lotto_id = lotto.lotto_id 
+        WHERE basket.member_id = ? AND lotto.status = 1
     `;
 
     db.query(sqlSelect, [member_id], (err, results) => {
