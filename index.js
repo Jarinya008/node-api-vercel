@@ -429,7 +429,8 @@ app.delete('/removeLottoFromBasket', (req, res) => {
 });
 
 //สุ่มรางวัลจากทั้งหมด
-app.get('/award_lotto_all', (req, res) => {
+app.post('/award_lotto_all', (req, res) => {
+    const { price } = req.body;
     const sql = `
         SELECT * 
         FROM lotto 
