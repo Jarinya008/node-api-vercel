@@ -56,6 +56,25 @@ app.get('/users', (req, res) => {
     });
 });
 
+// เส้นทางใหม่สำหรับดึงโปรไฟล์ผู้ใช้
+app.get('/getUserProfile/:member_id', (req, res) => {
+    const memberId = req.params.member_id;
+  
+    const sqlSelect = "SELECT * FROM members WHERE member_id = ?";
+    db.query(sqlSelect, [memberId], (err, results) => {
+      if (err) {
+        console.error('Error fetching user profile:', err);
+        return res.status(500).send('Error fetching user profile');
+      }
+  
+      if (results.length > 0) {
+        res.json(results[0]);
+      } else {
+        res.status(404).send('User not found');
+      }
+    });
+  });  
+
 
 app.post('/register', (req, res) => {
     const { name, email, username, password, phone, money } = req.body; // Accessing all parameters from the request body
@@ -210,7 +229,7 @@ app.get('/searchLotto', (req, res) => {
 app.post('/Add_to_basket', (req, res) => {
     const { member_id, lotto_id, lotto_number } = req.body;
 
-    const sqlInsert = "INSERT INTO basket (member_id, lotto_id, lotto_number, price) VALUES (?, ?, ?, 500)";
+    const sqlInsert = "INSERT INTO basket (member_id, lotto_id, lotto_number, price) VALUES (?, ?, ?, 80)";
 
     db.query(sqlInsert, [member_id, lotto_id, lotto_number], (err, results) => {
         if (err) {
@@ -226,7 +245,12 @@ app.post('/Add_to_basket', (req, res) => {
 //SELECT เลขในตะกร้า ของแต่ละคน 
 app.get('/My_basket/:member_id', (req, res) => {
     const member_id = req.params.member_id; 
-    const sqlSelect = "SELECT * FROM basket WHERE member_id = ?"; 
+    const sqlSelect = `
+        SELECT basket.*, lotto.status 
+        FROM basket 
+        JOIN lotto ON basket.lotto_id = lotto.lotto_id 
+        WHERE basket.member_id = ? AND lotto.status = 1
+    `;
 
     db.query(sqlSelect, [member_id], (err, results) => {
         if (err) {
@@ -239,6 +263,7 @@ app.get('/My_basket/:member_id', (req, res) => {
         }
     });
 });
+
 
 // SELECT เลขที่ซื้อแล้ว ของแต่ละคน 
 app.get('/My_buyLotto/:member_id', (req, res) => {
@@ -295,11 +320,11 @@ app.get('/My_buyLotto/:member_id', (req, res) => {
 
 
 app.post('/buy', (req, res) => {
-    const { name, lotto_number } = req.body;
+    const { member_id, lotto_id } = req.body;
 
-    // ตรวจสอบข้อมูลของสมาชิก
-    const sqlMem = "SELECT member_id, money FROM members WHERE name = ?";
-    db.query(sqlMem, [name], (err, memberResults) => {
+    // ตรวจสอบสมาชิก และ select เอาเงินสมาชิกออกมา
+    const sqlMem = "SELECT member_id, money FROM members WHERE member_id = ?";
+    db.query(sqlMem, [member_id], (err, memberResults) => {
         if (err) {
             console.error('Error searching for member:', err);
             return res.status(500).send('An error occurred while searching for the member.');
@@ -308,66 +333,69 @@ app.post('/buy', (req, res) => {
         if (memberResults.length > 0) {
             const member = memberResults[0];
             const memberMoney = member.money;
+            const lottoPrice = 80; // ตั้งราคาเป็น 80 บาทตามที่กำหนด
 
-            // ตรวจสอบข้อมูลล็อตเตอรี่เพื่อดึงราคาและ ID
-            const sqlLotto = "SELECT * FROM basket WHERE lotto_number = ?";
-            db.query(sqlLotto, [lotto_number], (err, lottoResults) => {
-                if (err) {
-                    console.error('Error searching for lotto price:', err);
-                    return res.status(500).send('An error occurred while searching for the lotto price.');
-                }
+            console.log(memberMoney);
+            console.log(lottoPrice);
 
-                if (lottoResults.length > 0) {
-                    const lotto = lottoResults[0];
-                    const lottoId = lotto.lotto_id;
-                    const lottoPrice = lotto.price;
-                    console.log(memberMoney);
-                    console.log(lottoPrice);
-                    // เปรียบเทียบเงินกับราคา
-                    if (memberMoney >= lottoPrice) {
-                        // เงินเพียงพอ ทำการซื้อ
+            // เปรียบเทียบเงินกับราคา
+            if (memberMoney >= lottoPrice) {
+                // เงินเพียงพอ ทำการซื้อ
+                // ตรวจสอบข้อมูลล็อตเตอรี่
+                const sqlLotto = "SELECT lotto_number FROM basket WHERE lotto_id = ? AND member_id = ?";
+                db.query(sqlLotto, [lotto_id,member_id], (err, lottoResults) => {
+                    if (err) {
+                        console.error('Error searching for lotto number:', err);
+                        return res.status(500).send('An error occurred while searching for the lotto number.');
+                    }
+
+                    if (lottoResults.length > 0) {
+                        const lotto = lottoResults[0].lotto_number;
+
                         // คำสั่ง SQL สำหรับการซื้อ
                         const sqlInsert = "INSERT INTO buy (member_id, lotto_id, lotto_number, price, date_buy) VALUES (?, ?, ?, ?, NOW())";
-                        db.query(sqlInsert, [member.member_id, lottoId, lotto_number, lottoPrice], (err, insertResults) => {
+                        db.query(sqlInsert, [member_id, lotto_id, lotto, lottoPrice], (err, insertResults) => {
                             if (err) {
                                 console.error('Error inserting buy record:', err);
                                 return res.status(500).send('An error occurred while processing the purchase.');
                             }
 
-                            // ลดเงินของสมาชิก
+                            // ลดเงินของสมาชิก 80 บาท
                             const sqlUpdateMoney = "UPDATE members SET money = money - ? WHERE member_id = ?";
-                            db.query(sqlUpdateMoney, [lottoPrice, member.member_id], (err, updateResults) => {
+                            db.query(sqlUpdateMoney, [lottoPrice, member_id], (err, updateResults) => {
                                 if (err) {
                                     console.error('Error updating member money:', err);
                                     return res.status(500).send('An error occurred while updating the member\'s money.');
                                 }
 
                                 // ลบข้อมูลล็อตเตอรี่จากตาราง basket
-                                const sqlDeleteBasket = "DELETE FROM basket WHERE member_id = ? AND lotto_number = ?";
-                                db.query(sqlDeleteBasket, [member.member_id, lotto_number], (err, deleteResults) => {
+                                const sqlDeleteBasket = "DELETE FROM basket WHERE member_id = ? AND lotto_id = ?";
+                                db.query(sqlDeleteBasket, [member_id, lotto_id], (err, deleteResults) => {
                                     if (err) {
                                         console.error('Error deleting from basket:', err);
                                         return res.status(500).send('An error occurred while deleting the item from basket.');
                                     }
+
+                                    // อัพเดทสถานะล็อตโต้เป็น 0
                                     const sqlUpdateStatus = "UPDATE lotto SET status = 0 WHERE lotto_id = ?";
-                                    db.query(sqlUpdateStatus, [lottoId], (err, upResults) => {
+                                    db.query(sqlUpdateStatus, [lotto_id], (err, upResults) => {
                                         if (err) {
-                                            console.error('Error deleting from basket:', err);
-                                            return res.status(500).send('An error occurred while update the item from lotto.');
+                                            console.error('Error updating lotto status:', err);
+                                            return res.status(500).send('An error occurred while updating the lotto status.');
                                         }
-    
+
                                         res.json({ message: 'successful' });
                                     });
                                 });
                             });
                         });
                     } else {
-                        res.status(400).send('Insufficient funds.');
+                        res.status(404).send('Lotto number not found.');
                     }
-                } else {
-                    res.status(404).send('Lotto number not found.');
-                }
-            });
+                });
+            } else {
+                res.status(400).send('Insufficient funds.');
+            }
         } else {
             res.status(404).send('Member not found.');
         }
@@ -427,6 +455,91 @@ app.delete('/removeLottoFromBasket', (req, res) => {
         }
     });
 });
+
+//เติมเงิน
+app.post('/addWallet', (req, res) => {
+    const { member_id, amount } = req.body;
+
+    // ตรวจสอบว่ามีข้อมูลที่ต้องการครบหรือไม่
+    if (!member_id || !amount) {
+        return res.status(400).send('Member ID และจำนวนเงินต้องถูกระบุ');
+    }
+
+    // select เงินเดิม
+    const sqlSelect = "SELECT money FROM members WHERE member_id = ?";
+    db.query(sqlSelect, [member_id], (err, memberResults) => {
+        if (err) {
+            console.error('Error selecting member money:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการค้นหายอดเงินของสมาชิก');
+        }
+
+        if (memberResults.length > 0) {
+            const currentMoney = memberResults[0].money;
+
+            // บวกจำนวนเงินใหม่
+            const updatedMoney = currentMoney + amount;
+
+            //อัปเดทยอดเงินของสมาชิก
+            const sqlUpdate = "UPDATE members SET money = ? WHERE member_id = ?";
+            db.query(sqlUpdate, [updatedMoney, member_id], (err, updateResults) => {
+                if (err) {
+                    console.error('Error updating member money:', err);
+                    return res.status(500).send('เกิดข้อผิดพลาดในการอัปเดทยอดเงินของสมาชิก');
+                }
+
+                res.json({ message: 'ยอดเงินถูกเพิ่มเรียบร้อยแล้ว', updatedMoney });
+            });
+        } else {
+            res.status(404).send('ไม่พบสมาชิกที่ระบุ');
+        }
+    });
+});
+
+
+//ถอนเงิน 
+app.post('/Withdraw_money', (req, res) => {
+    const { member_id, amount } = req.body;
+
+    // ตรวจสอบว่ามีข้อมูลที่ต้องการครบหรือไม่
+    if (!member_id || !amount) {
+        return res.status(400).send('Member ID และจำนวนเงินต้องถูกระบุ');
+    }
+
+    // select เงินเดิม
+    const sqlSelect = "SELECT money FROM members WHERE member_id = ?";
+    db.query(sqlSelect, [member_id], (err, memberResults) => {
+        if (err) {
+            console.error('Error selecting member money:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการค้นหายอดเงินของสมาชิก');
+        }
+
+        if (memberResults.length > 0) {
+            const currentMoney = memberResults[0].money;
+            
+            // ถ้าเงินมี >= 100 ค่อยถอนได้
+            if (currentMoney >= 100 && amount <= currentMoney) {
+                // หักเงินออก
+                const updatedMoney = currentMoney - amount;
+                
+                // อัปเดทยอดเงินของสมาชิก
+                const sqlUpdate = "UPDATE members SET money = ? WHERE member_id = ?";
+                db.query(sqlUpdate, [updatedMoney, member_id], (err, updateResults) => {
+                    if (err) {
+                        console.error('Error updating member money:', err);
+                        return res.status(500).send('เกิดข้อผิดพลาดในการอัปเดทยอดเงินของสมาชิก');
+                    }
+                    res.json({ message: 'ยอดเงินถูกอัปเดตเรียบร้อยแล้ว', updatedMoney });
+                });
+            } else {
+                res.status(400).send('จำนวนเงินที่ถอนต้องมากกว่าหรือเท่ากับ 100 และน้อยกว่าหรือเท่ากับยอดเงินที่มี');
+            }
+        } else {
+            res.status(404).send('ไม่พบสมาชิกที่ระบุ');
+        }
+    });
+});
+
+
 
 //สุ่มรางวัลจากทั้งหมด
 app.post('/award_lotto_all', (req, res) => {
