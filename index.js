@@ -497,8 +497,8 @@ app.post('/addWallet', (req, res) => {
 
 
 //ถอนเงิน 
-app.post('/Withdraw_money',(req, res)=>{
-        const { member_id, amount } = req.body;
+app.post('/Withdraw_money', (req, res) => {
+    const { member_id, amount } = req.body;
 
     // ตรวจสอบว่ามีข้อมูลที่ต้องการครบหรือไม่
     if (!member_id || !amount) {
@@ -516,28 +516,29 @@ app.post('/Withdraw_money',(req, res)=>{
         if (memberResults.length > 0) {
             const currentMoney = memberResults[0].money;
             
-            //ถ้าเงินมี >= 100 ค่อยถอนได้
-            if(memberResults >= 100 && amount<= memberResults){
+            // ถ้าเงินมี >= 100 ค่อยถอนได้
+            if (currentMoney >= 100 && amount <= currentMoney) {
                 // หักเงินออก
                 const updatedMoney = currentMoney - amount;
                 
-                //อัปเดทยอดเงินของสมาชิก
+                // อัปเดทยอดเงินของสมาชิก
                 const sqlUpdate = "UPDATE members SET money = ? WHERE member_id = ?";
-            db.query(sqlUpdate, [updatedMoney, member_id], (err, updateResults) => {
-                if (err) {
-                    console.error('Error updating member money:', err);
-                    return res.status(500).send('เกิดข้อผิดพลาดในการอัปเดทยอดเงินของสมาชิก');
-                 }
-                     res.json({ message: 'ยอดเงินถูกเพิ่มเรียบร้อยแล้ว', updatedMoney });
-                 });
-                  } else {
-                     res.status(404).send('ไม่พบสมาชิกที่ระบุ');
-                 }
-        }else{
-            res.json({ message: 'ยอดเงินขั้นต่ำไม่พอสำหรับถอนเงิน' });
+                db.query(sqlUpdate, [updatedMoney, member_id], (err, updateResults) => {
+                    if (err) {
+                        console.error('Error updating member money:', err);
+                        return res.status(500).send('เกิดข้อผิดพลาดในการอัปเดทยอดเงินของสมาชิก');
+                    }
+                    res.json({ message: 'ยอดเงินถูกอัปเดตเรียบร้อยแล้ว', updatedMoney });
+                });
+            } else {
+                res.status(400).send('จำนวนเงินที่ถอนต้องมากกว่าหรือเท่ากับ 100 และน้อยกว่าหรือเท่ากับยอดเงินที่มี');
+            }
+        } else {
+            res.status(404).send('ไม่พบสมาชิกที่ระบุ');
         }
     });
 });
+
 
 
 //สุ่มรางวัลจากทั้งหมด
