@@ -230,7 +230,7 @@ app.get('/My_basket/:member_id', (req, res) => {
         SELECT basket.*, lotto.status 
         FROM basket 
         JOIN lotto ON basket.lotto_id = lotto.lotto_id 
-        WHERE basket.member_id = ? AND lotto.status = 1
+        WHERE basket.member_id = ?
     `;
 
     db.query(sqlSelect, [member_id], (err, results) => {
