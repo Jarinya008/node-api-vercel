@@ -543,7 +543,7 @@ app.post('/Withdraw_money', (req, res) => {
 const round = 1;
 //สุ่มรางวัลจากทั้งหมด
 app.post('/award_lotto_all', (req, res) => {
-    const { prize_order, price } = req.body;
+    //const { prize_order, price } = req.body;
     const sqlCountRows = "COUNT(*) FROM reward";
     db.query(sqlCountRows, (err, resultsRow) => {
         if (err) {
