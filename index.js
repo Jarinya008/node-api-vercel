@@ -538,6 +538,7 @@ app.post('/Withdraw_money', (req, res) => {
     });
 });
 
+
 //ออกรางวัล
 app.post('/Award_lotto_all', (req, res) => {
     const { lotto_id, lotto_numbers, prizes } = req.body;
@@ -546,42 +547,59 @@ app.post('/Award_lotto_all', (req, res) => {
         return res.status(400).send('ข้อมูลไม่ถูกต้อง ต้องส่งหมายเลขล็อตโต้และจำนวนเงินรางวัลครบ 5 รายการ');
     }
 
-    // ดึง round_number ล่าสุดจากฐานข้อมูล
-    const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
-    db.query(getLatestRoundQuery, (err, result) => {
+    // ตรวจสอบว่า lotto_id ทุกค่าอยู่ในตาราง lotto หรือไม่
+    const checkLottoIdQuery = 'SELECT id FROM lotto WHERE id IN (?)';
+    db.query(checkLottoIdQuery, [lotto_id], (err, result) => {
         if (err) {
-            console.error('Error fetching latest round number:', err);
-            return res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรอบล่าสุด');
+            console.error('Error checking lotto_id:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการตรวจสอบหมายเลขล็อตโต้');
         }
 
-        // กำหนด round_number ใหม่ (เพิ่มจากรอบล่าสุด 1)
-        const latestRound = result[0].latestRound || 0;
-        const newRoundNumber = latestRound + 1;
+        const validLottoIds = result.map(row => row.id);
+        const allLottoIdsValid = lotto_id.every(id => validLottoIds.includes(id));
 
-        // กำหนดวันที่ปัจจุบัน
-        const currentDate = new Date();
+        if (!allLottoIdsValid) {
+            return res.status(400).send('บางหมายเลขล็อตโต้ไม่ถูกต้อง');
+        }
 
-        // เตรียมข้อมูลสำหรับการแทรกผลการออกรางวัล
-        const insertQuery = `INSERT INTO reward (round, lotto_id, lotto_number, price, prize_order, date) VALUES ?`;
-        const values = lotto_numbers.map((lotto_number, index) => [
-            newRoundNumber,        // round_number
-            lotto_id[index],       // lotto_id
-            lotto_number,          // lotto_number
-            prizes[index],         // price
-            index + 1,             // prize_order (กำหนดลำดับรางวัล 1-5)
-            currentDate            // date
-        ]);
-
-        // แทรกข้อมูลรอบใหม่ลงในฐานข้อมูล
-        db.query(insertQuery, [values], (err, result) => {
+        // ดึง round_number ล่าสุดจากฐานข้อมูล
+        const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
+        db.query(getLatestRoundQuery, (err, result) => {
             if (err) {
-                console.error('Error inserting lotto results:', err);
-                return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
+                console.error('Error fetching latest round number:', err);
+                return res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรอบล่าสุด');
             }
-            res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
+
+            // กำหนด round_number ใหม่ (เพิ่มจากรอบล่าสุด 1)
+            const latestRound = result[0].latestRound || 0;
+            const newRoundNumber = latestRound + 1;
+
+            // กำหนดวันที่ปัจจุบัน
+            const currentDate = new Date();
+
+            // เตรียมข้อมูลสำหรับการแทรกผลการออกรางวัล
+            const insertQuery = `INSERT INTO reward (round, lotto_id, lotto_number, price, prize_order, date) VALUES ?`;
+            const values = lotto_numbers.map((lotto_number, index) => [
+                newRoundNumber,        // round_number
+                lotto_id[index],       // lotto_id
+                lotto_number,          // lotto_number
+                prizes[index],         // price
+                index + 1,             // prize_order (กำหนดลำดับรางวัล 1-5)
+                currentDate            // date
+            ]);
+
+            // แทรกข้อมูลรอบใหม่ลงในฐานข้อมูล
+            db.query(insertQuery, [values], (err, result) => {
+                if (err) {
+                    console.error('Error inserting lotto results:', err);
+                    return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
+                }
+                res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
+            });
         });
     });
 });
+
 
 
 const round = 1;
