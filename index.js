@@ -538,31 +538,34 @@ app.post('/Withdraw_money', (req, res) => {
     });
 });
 
+<<<<<<< HEAD
 
+=======
+//ออกรางวัล
+>>>>>>> 53a06c79dc080e7382d0938a58ef8b82d7acaab1
 app.post('/Award_lotto_all', (req, res) => {
     const { lotto_id, lotto_numbers, prizes } = req.body;
 
-    // ตรวจสอบข้อมูลที่ได้รับ
     if (!lotto_numbers || !prizes || !lotto_id || lotto_numbers.length !== 5 || prizes.length !== 5 || lotto_id.length !== 5) {
         return res.status(400).send('ข้อมูลไม่ถูกต้อง ต้องส่งหมายเลขล็อตโต้และจำนวนเงินรางวัลครบ 5 รายการ');
     }
 
-    // ตรวจสอบว่า lotto_id ทั้งหมดมีอยู่ในตาราง lotto หรือไม่
-    const checkLottoIdsQuery = 'SELECT lotto_id FROM lotto WHERE lotto_id IN (?)';
-    db.query(checkLottoIdsQuery, [lotto_id], (err, result) => {
+    // ดึง round_number ล่าสุดจากฐานข้อมูล
+    const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
+    db.query(getLatestRoundQuery, (err, result) => {
         if (err) {
-            console.error('Error checking lotto_id existence:', err);
-            return res.status(500).send('เกิดข้อผิดพลาดในการตรวจสอบหมายเลขล็อตโต้');
+            console.error('Error fetching latest round number:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรอบล่าสุด');
         }
 
-        // เปรียบเทียบว่า id ที่ได้รับทั้งหมดมีอยู่ในฐานข้อมูลหรือไม่
-        const existingLottoIds = result.map(row => row.lotto_id);
-        const isValid = lotto_id.every(id => existingLottoIds.includes(id));
+        // กำหนด round_number ใหม่ (เพิ่มจากรอบล่าสุด 1)
+        const latestRound = result[0].latestRound || 0;
+        const newRoundNumber = latestRound + 1;
 
-        if (!isValid) {
-            return res.status(400).send('หมายเลขล็อตโต้บางตัวไม่มีอยู่ในฐานข้อมูล');
-        }
+        // กำหนดวันที่ปัจจุบัน
+        const currentDate = new Date();
 
+<<<<<<< HEAD
         // ตรวจสอบว่าเลขล็อตโต้ที่สุ่มมาต้องไม่ซ้ำกับเลขล็อตโต้ที่มีอยู่ในตาราง reward ทั้งหมด
         const checkExistingNumbersQuery = 'SELECT lotto_id FROM reward WHERE lotto_id IN (?)';
         db.query(checkExistingNumbersQuery, [lotto_id], (err, result) => {
@@ -614,14 +617,37 @@ app.post('/Award_lotto_all', (req, res) => {
                     res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
                 });
             });
+=======
+        // เตรียมข้อมูลสำหรับการแทรกผลการออกรางวัล
+        const insertQuery = `INSERT INTO reward (round, lotto_id, lotto_number, price, prize_order, date) VALUES ?`;
+        const values = lotto_numbers.map((lotto_number, index) => [
+            newRoundNumber,        // round_number
+            lotto_id[index],       // lotto_id
+            lotto_number,          // lotto_number
+            prizes[index],         // price
+            index + 1,             // prize_order (กำหนดลำดับรางวัล 1-5)
+            currentDate            // date
+        ]);
+
+        // แทรกข้อมูลรอบใหม่ลงในฐานข้อมูล
+        db.query(insertQuery, [values], (err, result) => {
+            if (err) {
+                console.error('Error inserting lotto results:', err);
+                return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
+            }
+            res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
+>>>>>>> 53a06c79dc080e7382d0938a58ef8b82d7acaab1
         });
     });
 });
 
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 53a06c79dc080e7382d0938a58ef8b82d7acaab1
 const round = 1;
 //สุ่มรางวัลจากทั้งหมด
 // app.post('/award_lotto_all', (req, res) => {
@@ -661,7 +687,7 @@ const round = 1;
 
 
 
-app.post('/award_lotto_all', (req, res) => {
+app.post('/award_lotto_notall', (req, res) => {
     const sqlCountRows = "SELECT COUNT(*) as rowCount FROM reward";
     db.query(sqlCountRows, (err, resultsRow) => {
         if (err) {
