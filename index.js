@@ -16,10 +16,10 @@ const PORT = 3306;
 
 // MySQL database connection configuration
 const db = mysql.createConnection({
-    host: 'sql12.freemysqlhosting.net',
-    user: 'sql12729499',       // Replace with your MySQL username
-    password: 'rfAwVfvkhI', // Replace with your MySQL password
-    database: 'sql12729499' // Replace with your MySQL database name
+    //host: 'sql12.freemysqlhosting.net',
+    user: 'web66_65011212021',       // Replace with your MySQL username
+    password: '65011212021@csmsu', // Replace with your MySQL password
+    database: 'web66_65011212021' // Replace with your MySQL database name
 });
 
 // Connect to MySQL
