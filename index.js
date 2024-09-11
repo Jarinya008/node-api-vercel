@@ -788,6 +788,66 @@ app.post('/randomReward', (req, res) => {
 });
 
 
+app.post('/randomReward_Buy', (req, res) => {
+    // รับค่าจาก query parameters
+    const prizeOrder = parseInt(req.query.prize_order);
+    
+    // ตรวจสอบว่าค่าที่ส่งมามีหรือไม่
+    if (!prizeOrder || isNaN(prizeOrder)) {
+        return res.status(400).send('Missing or invalid prize_order parameter.');
+    }
+
+    // Step 1: สุ่มรางวัลจากตาราง lotto status = 0
+    const selectLottoQuery = 'SELECT lotto_id, lotto_number FROM lotto WHERE status = 0 ORDER BY RAND() LIMIT 1';
+    
+    db.query(selectLottoQuery, (err, lottoResults) => {
+        if (err) {
+            console.error('Error fetching lotto numbers:', err);
+            return res.status(500).send('An error occurred while fetching lotto numbers.');
+        }
+
+        if (lottoResults.length === 0) {
+            return res.status(404).send('No lotto numbers found.');
+        }
+
+        const { lotto_id, lotto_number } = lottoResults[0];
+
+        // Step 2: ตรวจสอบว่ามีการซ้ำกับ random_reward หรือไม่
+        const checkRandomRewardQuery = 'SELECT * FROM random_reward WHERE lotto_id = ? AND lotto_number = ?';
+        
+        db.query(checkRandomRewardQuery, [lotto_id, lotto_number], (err, randomRewardResults) => {
+            if (err) {
+                console.error('Error checking random_reward:', err);
+                return res.status(500).send('An error occurred while checking random_reward.');
+            }
+
+            if (randomRewardResults.length > 0) {
+                return res.status(400).send('The selected lotto number is already in random_reward.');
+            }
+
+            // Step 3: แทรกข้อมูลใหม่ลงใน random_reward
+            const insertRandomRewardQuery = 'INSERT INTO random_reward (lotto_id, lotto_number, prize_order) VALUES (?, ?, ?)';
+            
+            db.query(insertRandomRewardQuery, [lotto_id, lotto_number, prizeOrder], (err, insertResults) => {
+                if (err) {
+                    console.error('Error inserting into random_reward:', err);
+                    return res.status(500).send('An error occurred while inserting into random_reward.');
+                }
+
+                // Step 4: ส่งค่าที่บันทึกออกไปเป็น JSON
+                const insertedData = {
+                    random_reward_id: insertResults.insertId, // ID ของการแทรกข้อมูล
+                    lotto_id,
+                    lotto_number,
+                    prize_order: prizeOrder
+                };
+
+                res.status(200).json(insertedData);
+            });
+        });
+    });
+});
+
 
 
 
