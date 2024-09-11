@@ -704,7 +704,7 @@ app.post('/Award_lotto_all', (req, res) => {
     });
 });
 
-
+//เช็คว่าถูกรางวัลมั้ย
 app.get('/check_reward', (req, res) => {
     const { lotto_id } = req.body;
     if (!lotto_id) {
@@ -727,7 +727,7 @@ app.get('/check_reward', (req, res) => {
 });
 
 //สุ่มรางวัล จาก lotto ทั้งหมด
-app.post('/randomPrize', (req, res) => {
+app.post('/randomReward', (req, res) => {
     // รับค่าจาก query parameters
     const prizeOrder = parseInt(req.query.prize_order);
     
