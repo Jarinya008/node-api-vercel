@@ -622,6 +622,8 @@ app.post('/award_lotto_all', (req, res) => {
 });
 
 
+
+
 //ออกรางวัล ทั้งหมด
 app.post('/Award_lotto_all', (req, res) => {
     const { lotto_id, lotto_numbers, prizes } = req.body;
@@ -702,8 +704,26 @@ app.post('/Award_lotto_all', (req, res) => {
     });
 });
 
-//สุ่มรางวัล จาก lotto ที่ขายแล้ว
+app.get('/check_reward', (req, res) => {
+    const { lotto_id } = req.body;
+    if (!lotto_id) {
+        return res.status(400).json({ error: 'lotto_id is required' });
+    }
+    const sql = "SELECT * FROM reward WHERE lotto_id = ?";
 
+    db.query(sql, [lotto_id], (err, result) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            return res.status(500).json({ error: 'Error retrieving reward data' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'No reward found for this lotto_id' });
+        }
+
+        res.json({ message: 'No reward found for this lotto_id' });
+    });
+});
 
 //สุ่มรางวัล จาก lotto ทั้งหมด
 
