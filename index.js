@@ -538,6 +538,51 @@ app.post('/Withdraw_money', (req, res) => {
     });
 });
 
+//ออกรางวัล
+app.post('/Award_lotto_all', (req, res) => {
+    const { lotto_id, lotto_numbers, prizes } = req.body;
+
+    if (!lotto_numbers || !prizes || !lotto_id || lotto_numbers.length !== 5 || prizes.length !== 5 || lotto_id.length !== 5){
+        return res.status(400).send('ข้อมูลไม่ถูกต้อง ต้องส่งหมายเลขล็อตโต้และจำนวนเงินรางวัลครบ 5 รายการ');
+    }
+
+    // ดึง round_number ล่าสุดจากฐานข้อมูล
+    const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
+    db.query(getLatestRoundQuery, (err, result) => {
+        if (err) {
+            console.error('Error fetching latest round number:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรอบล่าสุด');
+        }
+
+        // กำหนด round_number ใหม่ (เพิ่มจากรอบล่าสุด 1)
+        const latestRound = result[0].latestRound || 0;
+        const newRoundNumber = latestRound + 1;
+
+        // กำหนดวันที่ปัจจุบัน
+        const currentDate = new Date();
+
+        // เตรียมข้อมูลสำหรับการแทรกผลการออกรางวัล
+        const insertQuery = `INSERT INTO reward (round_number, lotto_id, lotto_number, price, prize_order, date) VALUES ?`;
+        const values = lotto_numbers.map((lotto_number, index) => [
+            newRoundNumber,        // round_number
+            lotto_id,               // lotto_id
+            lotto_number[index],                // lotto_number
+            prizes[index],         // price
+            index + 1,             // prize_order (กำหนดลำดับรางวัล 1-5)
+            currentDate            // date
+        ]);
+
+        // แทรกข้อมูลรอบใหม่ลงในฐานข้อมูล
+        db.query(insertQuery, [values], (err, result) => {
+            if (err) {
+                console.error('Error inserting lotto results:', err);
+                return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
+            }
+            res.json(result);
+            res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
+        });
+    });
+});
 
 const round = 1;
 //สุ่มรางวัลจากทั้งหมด
