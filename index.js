@@ -224,7 +224,6 @@ app.get('/searchLotto', (req, res) => {
 });
 
 
-
 //เลขลงตะกร้า
 app.post('/Add_to_basket', (req, res) => {
     const { member_id, lotto_id, lotto_number } = req.body;
