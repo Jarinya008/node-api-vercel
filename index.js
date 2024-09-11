@@ -12,7 +12,7 @@ const corsConfig = {
 app.options("", cors(corsConfig));
 app.use(cors(corsConfig));
 app.use(express.json());
-const PORT = 3306;
+const PORT = 3000;
 
 // MySQL database connection configuration
 const db = mysql.createConnection({
@@ -31,9 +31,9 @@ db.connect(err => {
     }
 });
 
-// app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 app.get('/', (req, res) => {
     res.send('Hello World');
@@ -614,6 +614,6 @@ app.post('/award_lotto_all', (req, res) => {
 
 
 module.exports = app;
-// app.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-// });
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
