@@ -548,15 +548,15 @@ app.post('/Award_lotto_all', (req, res) => {
     }
 
     // ตรวจสอบว่า lotto_id ทุกค่าอยู่ในตาราง lotto หรือไม่
-    const checkLottoIdQuery = 'SELECT id FROM lotto WHERE id IN (?)';
+    const checkLottoIdQuery = 'SELECT lotto_id FROM lotto WHERE lotto_id IN (?)';
     db.query(checkLottoIdQuery, [lotto_id], (err, result) => {
         if (err) {
             console.error('Error checking lotto_id:', err);
             return res.status(500).send('เกิดข้อผิดพลาดในการตรวจสอบหมายเลขล็อตโต้');
         }
 
-        const validLottoIds = result.map(row => row.id);
-        const allLottoIdsValid = lotto_id.every(id => validLottoIds.includes(id));
+        const validLottoIds = result.map(row => row.lotto_id);
+        const allLottoIdsValid = lotto_id.every(lotto_id => validLottoIds.includes(lotto_id));
 
         if (!allLottoIdsValid) {
             return res.status(400).send('บางหมายเลขล็อตโต้ไม่ถูกต้อง');
