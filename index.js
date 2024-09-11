@@ -540,9 +540,9 @@ app.post('/Withdraw_money', (req, res) => {
 
 //ออกรางวัล
 app.post('/Award_lotto_all', (req, res) => {
-    const { lotto_id, lotto_number, prizes } = req.body;
+    const { lotto_id, lotto_numbers, prizes } = req.body;
 
-    if (!lotto_numbers || !prizes || !lotto_id || lotto_number.length !== 5 || prizes.length !== 5 || lotto_id.length !== 5){
+    if (!lotto_numbers || !prizes || !lotto_id || lotto_numbers.length !== 5 || prizes.length !== 5 || lotto_id.length !== 5) {
         return res.status(400).send('ข้อมูลไม่ถูกต้อง ต้องส่งหมายเลขล็อตโต้และจำนวนเงินรางวัลครบ 5 รายการ');
     }
 
@@ -562,11 +562,11 @@ app.post('/Award_lotto_all', (req, res) => {
         const currentDate = new Date();
 
         // เตรียมข้อมูลสำหรับการแทรกผลการออกรางวัล
-        const insertQuery = `INSERT INTO reward (round_number, lotto_id, lotto_number, price, prize_order, date) VALUES ?`;
-        const values = lotto_number.map((lotto_number, index) => [
+        const insertQuery = `INSERT INTO reward (round, lotto_id, lotto_number, price, prize_order, date) VALUES ?`;
+        const values = lotto_numbers.map((lotto_number, index) => [
             newRoundNumber,        // round_number
-            lotto_id[index],               // lotto_id
-            lotto_number[index],                // lotto_number
+            lotto_id[index],       // lotto_id
+            lotto_number,          // lotto_number
             prizes[index],         // price
             index + 1,             // prize_order (กำหนดลำดับรางวัล 1-5)
             currentDate            // date
@@ -578,11 +578,11 @@ app.post('/Award_lotto_all', (req, res) => {
                 console.error('Error inserting lotto results:', err);
                 return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
             }
-            res.json(result);
             res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
         });
     });
 });
+
 
 const round = 1;
 //สุ่มรางวัลจากทั้งหมด
