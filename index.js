@@ -12,7 +12,7 @@ const corsConfig = {
 app.options("", cors(corsConfig));
 app.use(cors(corsConfig));
 app.use(express.json());
-const PORT = 3000;
+const PORT = 3300;
 
 // MySQL database connection configuration
 const db = mysql.createConnection({
