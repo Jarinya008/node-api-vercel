@@ -16,7 +16,7 @@ const PORT = 3300;
 
 // MySQL database connection configuration
 const db = mysql.createConnection({
-    host: '202.28.34.197',
+    host: 'localhost',
     user: 'web66_65011212021',       // Replace with your MySQL username
     password: '65011212021@csmsu', // Replace with your MySQL password
     database: 'web66_65011212021' // Replace with your MySQL database name
