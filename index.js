@@ -543,23 +543,25 @@ app.post('/Withdraw_money', (req, res) => {
 app.post('/Award_lotto_all', (req, res) => {
     const { lotto_id, lotto_numbers, prizes } = req.body;
 
+    // ตรวจสอบข้อมูลที่ได้รับ
     if (!lotto_numbers || !prizes || !lotto_id || lotto_numbers.length !== 5 || prizes.length !== 5 || lotto_id.length !== 5) {
         return res.status(400).send('ข้อมูลไม่ถูกต้อง ต้องส่งหมายเลขล็อตโต้และจำนวนเงินรางวัลครบ 5 รายการ');
     }
 
-    // ตรวจสอบว่า lotto_id ทุกค่าอยู่ในตาราง lotto หรือไม่
-    const checkLottoIdQuery = 'SELECT lotto_id FROM lotto WHERE lotto_id IN (?)';
-    db.query(checkLottoIdQuery, [lotto_id], (err, result) => {
+    // ตรวจสอบว่า lotto_id ทั้งหมดมีอยู่ในตาราง lotto หรือไม่
+    const checkLottoIdsQuery = 'SELECT lotto_id FROM lotto WHERE lotto_id IN (?)';
+    db.query(checkLottoIdsQuery, [lotto_id], (err, result) => {
         if (err) {
-            console.error('Error checking lotto_id:', err);
+            console.error('Error checking lotto_id existence:', err);
             return res.status(500).send('เกิดข้อผิดพลาดในการตรวจสอบหมายเลขล็อตโต้');
         }
 
-        const validLottoIds = result.map(row => row.lotto_id);
-        const allLottoIdsValid = lotto_id.every(lotto_id => validLottoIds.includes(lotto_id));
+        // เปรียบเทียบว่า id ที่ได้รับทั้งหมดมีอยู่ในฐานข้อมูลหรือไม่
+        const existingLottoIds = result.map(row => row.lotto_id);
+        const isValid = lotto_id.every(id => existingLottoIds.includes(id));
 
-        if (!allLottoIdsValid) {
-            return res.status(400).send('บางหมายเลขล็อตโต้ไม่ถูกต้อง');
+        if (!isValid) {
+            return res.status(400).send('หมายเลขล็อตโต้บางตัวไม่มีอยู่ในฐานข้อมูล');
         }
 
         // ดึง round_number ล่าสุดจากฐานข้อมูล
@@ -599,6 +601,7 @@ app.post('/Award_lotto_all', (req, res) => {
         });
     });
 });
+
 
 
 
