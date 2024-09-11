@@ -166,33 +166,46 @@ app.post('/forget_password', (req, res) => {
 });
 
 
+//admin ออก lotto แบบกำหนดใบ
 app.get('/randomLotto', (req, res) => {
     const numberOfSets = parseInt(req.query.count) || 100; // จำนวนชุดที่ต้องการสุ่ม (ค่าเริ่มต้นคือ 100)
     const sqlSelect = "SELECT lotto_number FROM lotto"; // คำสั่ง SQL สำหรับดึงเลขที่มีอยู่
     const sqlInsert = "INSERT INTO lotto (lotto_number) VALUES ?"; // คำสั่ง SQL สำหรับแทรกข้อมูล
 
-    // Step 1: สุ่มเลข 6 หลัก
-    const lottoNumbers = new Set();
-
-    while (lottoNumbers.size < numberOfSets) {
-        const randomNumber = Math.floor(100000 + Math.random() * 900000).toString();
-
-        // ตรวจสอบว่าเลขนี้ซ้ำกับเลขที่มีอยู่หรือไม่
-        lottoNumbers.add(randomNumber);
-    }
-
-    const lottoArray = Array.from(lottoNumbers).map(number => [number]);
-
-    // Step 2: บันทึกเลขที่สุ่มได้ลงในตาราง
-    db.query(sqlInsert, [lottoArray], (err, insertResults) => {
+    // Step 1: ดึงเลขที่มีอยู่ในฐานข้อมูล
+    db.query(sqlSelect, (err, results) => {
         if (err) {
-            console.error('Error inserting data:', err);
-            return res.status(500).send('An error occurred while inserting data.');
+            console.error('Error fetching existing lotto numbers:', err);
+            return res.status(500).send('An error occurred while fetching existing lotto numbers.');
         }
 
-        res.json({ message: 'Lotto numbers generated and stored successfully.', insertedCount: insertResults.affectedRows });
+        const existingLottoNumbers = new Set(results.map(row => row.lotto_number));
+        const lottoNumbers = new Set();
+
+        // สุ่มเลข 6 หลักที่ไม่ซ้ำกับเลขที่มีอยู่
+        while (lottoNumbers.size < numberOfSets) {
+            const randomNumber = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // ตรวจสอบว่าเลขนี้ซ้ำกับเลขที่มีอยู่หรือไม่
+            if (!existingLottoNumbers.has(randomNumber)) {
+                lottoNumbers.add(randomNumber);
+            }
+        }
+
+        const lottoArray = Array.from(lottoNumbers).map(number => [number]);
+
+        //  บันทึกเลขที่สุ่มได้ลงในตาราง
+        db.query(sqlInsert, [lottoArray], (err, insertResults) => {
+            if (err) {
+                console.error('Error inserting data:', err);
+                return res.status(500).send('An error occurred while inserting data.');
+            }
+
+            res.json({ message: 'Lotto numbers generated and stored successfully.', insertedCount: insertResults.affectedRows });
+        });
     });
 });
+
 
 
 //ค้นหาlotto
@@ -689,7 +702,10 @@ app.post('/Award_lotto_all', (req, res) => {
     });
 });
 
+//สุ่มรางวัล จาก lotto ที่ขายแล้ว
 
+
+//สุ่มรางวัล จาก lotto ทั้งหมด
 
 
 
