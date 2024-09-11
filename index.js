@@ -609,13 +609,8 @@ app.post('/award_lotto_all', (req, res) => {
 });
 
 
-<<<<<<< HEAD
-app.get('/check_reward', (req, res) => {
-    const { lotto_id } = req.body;
-    if (!lotto_id) {
-        return res.status(400).json({ error: 'lotto_id is required' });
-    }
-=======
+
+
 //ออกรางวัล ทั้งหมด
 app.post('/Award_lotto_all', (req, res) => {
     const { lotto_id, lotto_numbers, prizes } = req.body;
@@ -696,8 +691,11 @@ app.post('/Award_lotto_all', (req, res) => {
     });
 });
 
->>>>>>> 75f3f4e2a7582d3a99393fb2511b7f56e14d0912
-
+app.get('/check_reward', (req, res) => {
+    const { lotto_id } = req.body;
+    if (!lotto_id) {
+        return res.status(400).json({ error: 'lotto_id is required' });
+    }
     const sql = "SELECT * FROM reward WHERE lotto_id = ?";
 
     db.query(sql, [lotto_id], (err, result) => {
