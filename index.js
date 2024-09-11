@@ -12,11 +12,11 @@ const corsConfig = {
 app.options("", cors(corsConfig));
 app.use(cors(corsConfig));
 app.use(express.json());
-const PORT = 4000;
+const PORT = 3300;
 
 // MySQL database connection configuration
 const db = mysql.createConnection({
-    //host: 'http://202.28.34.197/myadmin',
+    host: '202.28.34.197',
     user: 'web66_65011212021',       // Replace with your MySQL username
     password: '65011212021@csmsu', // Replace with your MySQL password
     database: 'web66_65011212021' // Replace with your MySQL database name
