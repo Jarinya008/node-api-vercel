@@ -718,10 +718,10 @@ app.get('/check_reward', (req, res) => {
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ message: 'No reward found for this lotto_id' });
+            return res.status(404).json({ message: 'คุณถูกหวยกิน' });
         }
 
-        res.json({ message: 'No reward found for this lotto_id' });
+        res.json({ message: 'คุณถูกหวย',data: result });
     });
 });
 
