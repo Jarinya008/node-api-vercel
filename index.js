@@ -787,7 +787,7 @@ app.post('/randomReward', (req, res) => {
     });
 });
 
-
+//สุ่มรางวัล จาก lotto ที่ขายแล้ว
 app.post('/randomReward_Buy', (req, res) => {
     // รับค่าจาก query parameters
     const prizeOrder = parseInt(req.query.prize_order);
