@@ -864,7 +864,22 @@ app.post('/Award_lotto_status0', (req, res) => {
     });
 });
 
+app.get('/get_reward', (req, res) => {
+    const sql = 'SELECT * FROM reward WHERE round = (SELECT MAX(round) FROM reward)';
 
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching rewards:', err);
+            return res.status(500).send('An error occurred while fetching rewards.');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('No rewards found for the latest round.');
+        }
+
+        res.status(200).json(results);
+    });
+});
 
 
 app.get('/check_reward', (req, res) => {
