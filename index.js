@@ -725,26 +725,126 @@ app.get('/check_reward', (req, res) => {
     });
 });
 
-app.get('/up_reward', (req, res) => {
-    const { member_id, lotto_id,  } = req.body;
-    if (!lotto_id && !member_id) {
-        return res.status(400).json({ error: 'lotto_id or member_id is required' });
-    }
-    const sql = "SELECT * FROM reward WHERE lotto_id = ?";
+// app.post('/up_reward', (req, res) => {
+//     const { member_id, lotto_id,  } = req.body;
+//     if (!lotto_id && !member_id) {
+//         return res.status(400).json({ error: 'lotto_id or member_id is required' });
+//     }
+//     const sql = "SELECT price FROM reward WHERE lotto_id = ?";
 
-    db.query(sql, [lotto_id], (err, result) => {
+//     db.query(sql, [lotto_id], (err, result) => {
+//         if (err) {
+//             console.error('Error executing query:', err);
+//             return res.status(500).json({ error: 'Error retrieving reward data' });
+//         }
+
+//         if (result.length === 0) {
+//             return res.status(404).json({ message: 'ขึ้นเงินไม่ได้1' });
+//         }
+//         const sqlUp = "UPDATE members SET money = money + ? WHERE member_id = ?";
+//         db.query(sql, [result.price, member_id], (err, resultUp) => {
+//             if (err) {
+//                 console.error('Error executing query:', err);
+//                 return res.status(500).json({ error: 'Error retrieving reward data' });
+//             }
+    
+//             if (result.length === 0) {
+//                 return res.status(404).json({ message: 'ขึ้นเงินไม่ได้2' });
+//             }
+//             res.json({ data: resultUp });
+//         });
+//     });
+// });
+
+
+app.post('/up_reward', (req, res) => {
+    const { member_id, lotto_id } = req.body;
+    
+    if (!lotto_id || !member_id) {
+        return res.status(400).json({ error: 'lotto_id and member_id are required' });
+    }
+
+    // คำสั่ง SQL เพื่อดึงข้อมูลราคา (price) ของรางวัลจากตาราง reward
+    const sqlSelect = "SELECT price FROM reward WHERE lotto_id = ?";
+
+    db.query(sqlSelect, [lotto_id], (err, result) => {
         if (err) {
             console.error('Error executing query:', err);
             return res.status(500).json({ error: 'Error retrieving reward data' });
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ message: 'คุณถูกหวยกิน' });
+            return res.status(404).json({ message: 'ไม่พบข้อมูลรางวัลสำหรับ lotto_id นี้' });
         }
 
-        res.json({ message: 'คุณถูกหวย',data: result });
+        // ดึงข้อมูลราคาจากผลลัพธ์ของ Query
+        const price = result[0].price;
+
+        // คำสั่ง SQL เพื่ออัปเดตจำนวนเงินของสมาชิกในตาราง members
+        const sqlUpdate = "UPDATE members SET money = money + ? WHERE member_id = ?";
+
+        db.query(sqlUpdate, [price, member_id], (err, resultUp) => {
+            if (err) {
+                console.error('Error executing update query:', err);
+                return res.status(500).json({ error: 'Error updating member money' });
+            }
+
+            if (resultUp.affectedRows === 0) {
+                return res.status(404).json({ message: 'ไม่พบสมาชิกที่ต้องการอัปเดตเงิน' });
+            }
+
+            // เมื่ออัปเดตเงินสำเร็จแล้ว ลบข้อมูลในตารางที่เกี่ยวข้อง
+            const sqlDeleteBasket = "DELETE FROM basket WHERE lotto_id = ?";
+            const sqlDeleteBuy = "DELETE FROM buy WHERE lotto_id = ?";
+            const sqlDeleteLotto = "DELETE FROM lotto WHERE lotto_id = ?";
+            const sqlDeleteReward = "DELETE FROM reward WHERE lotto_id = ?";
+            const sqlDeleteRandomReward = "DELETE FROM random_reward WHERE lotto_id = ?";
+
+            db.query(sqlDeleteBasket, [member_id], (err, resultBasket) => {
+                if (err) {
+                    console.error('Error executing delete from basket:', err);
+                    return res.status(500).json({ error: 'Error deleting data from basket' });
+                }
+
+                db.query(sqlDeleteBuy, [lotto_id], (err, resultBuy) => {
+                    if (err) {
+                        console.error('Error executing delete from buy:', err);
+                        return res.status(500).json({ error: 'Error deleting data from buy' });
+                    }
+
+                    db.query(sqlDeleteLotto, [lotto_id], (err, resultLotto) => {
+                        if (err) {
+                            console.error('Error executing delete from lotto:', err);
+                            return res.status(500).json({ error: 'Error deleting data from lotto' });
+                        }
+
+                        db.query(sqlDeleteReward, [lotto_id], (err, resultReward) => {
+                            if (err) {
+                                console.error('Error executing delete from reward:', err);
+                                return res.status(500).json({ error: 'Error deleting data from reward' });
+                            }
+
+                            db.query(sqlDeleteRandomReward, [lotto_id], (err, resultRandomReward) => {
+                                if (err) {
+                                    console.error('Error executing delete from random_reward:', err);
+                                    return res.status(500).json({ error: 'Error deleting data from random_reward' });
+                                }
+
+                                res.json({ 
+                                    message: 'อัปเดตเงินและลบข้อมูลสำเร็จ',
+                                    updatedRows: resultUp.affectedRows
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
     });
 });
+
+
+
 
 //สุ่มรางวัล จาก lotto ทั้งหมด
 
@@ -868,6 +968,7 @@ app.post('/randomReward_Buy', (req, res) => {
         });
     });
 });
+
 
 
 
