@@ -706,17 +706,26 @@ app.post('/award_lotto_all', (req, res) => {
 
 
 app.post('/Award_lotto_all', (req, res) => {
+    // ตรวจสอบการรับข้อมูล
     const { prizes } = req.body;
 
+    // แปลง prizes จาก JSON string เป็น Array ถ้าจำเป็น
+    let prizesArray;
+    try {
+        prizesArray = JSON.parse(prizes);
+    } catch (e) {
+        return res.status(400).send('Invalid prizes format.');
+    }
+
     // ตรวจสอบว่ามีรางวัลที่ต้องการสุ่มหรือไม่
-    if (!prizes || prizes.length === 0) {
+    if (!Array.isArray(prizesArray) || prizesArray.length === 0) {
         return res.status(400).send('ต้องกรอกข้อมูลรางวัลอย่างน้อย 1 รายการ');
     }
 
     // สุ่มหมายเลขล็อตโต้ตามจำนวนรางวัลที่มี
     const selectLottoQuery = `SELECT lotto_id, lotto_number FROM lotto 
                               WHERE lotto_id NOT IN (SELECT lotto_id FROM reward) 
-                              ORDER BY RAND() LIMIT ${prizes.length}`;
+                              ORDER BY RAND() LIMIT ${prizesArray.length}`;
     
     db.query(selectLottoQuery, (err, lottoResults) => {
         if (err) {
@@ -765,7 +774,7 @@ app.post('/Award_lotto_all', (req, res) => {
                     newRoundNumber,        // round_number
                     lotto.lotto_id,        // lotto_id ที่สุ่มได้
                     lotto.lotto_number,    // lotto_number ที่สุ่มได้
-                    prizes[index],         // price ที่มาจาก array ของ prizes
+                    prizesArray[index],    // price ที่มาจาก array ของ prizes
                     index + 1,             // prize_order (ลำดับรางวัล 1-5)
                     currentDate            // date
                 ]);
@@ -783,6 +792,7 @@ app.post('/Award_lotto_all', (req, res) => {
         });
     });
 });
+
 
 
 app.post('/Award_lotto_status0', (req, res) => {
