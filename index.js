@@ -785,6 +785,86 @@ app.post('/Award_lotto_all', (req, res) => {
 });
 
 
+app.post('/Award_lotto_status0', (req, res) => {
+    const { prizes } = req.body;
+
+    // ตรวจสอบว่ามีรางวัลที่ต้องการสุ่มหรือไม่
+    if (!prizes || prizes.length === 0) {
+        return res.status(400).send('ต้องกรอกข้อมูลรางวัลอย่างน้อย 1 รายการ');
+    }
+
+    // สุ่มหมายเลขล็อตโต้ตามจำนวนรางวัลที่มี
+    const selectLottoQuery = `SELECT lotto_id, lotto_number FROM lotto 
+                              WHERE status = 0 AND lotto_id NOT IN (SELECT lotto_id FROM reward) 
+                              ORDER BY RAND() LIMIT ${prizes.length}`;
+    
+    db.query(selectLottoQuery, (err, lottoResults) => {
+        if (err) {
+            console.error('Error fetching lotto numbers:', err);
+            return res.status(500).send('An error occurred while fetching lotto numbers.');
+        }
+
+        if (lottoResults.length === 0) {
+            return res.status(404).send('No lotto numbers found.');
+        }
+
+        // ตรวจสอบว่า lotto_id ที่สุ่มมาไม่ซ้ำกันในตาราง reward
+        const lotto_id = lottoResults.map(row => row.lotto_id);
+        const lotto_number = lottoResults.map(row => row.lotto_number);
+
+        // ตรวจสอบว่าเลขล็อตโต้ที่สุ่มมาต้องไม่ซ้ำกับเลขล็อตโต้ที่มีอยู่ในตาราง reward
+        const checkExistingNumbersQuery = 'SELECT lotto_id FROM reward WHERE lotto_id IN (?)';
+        db.query(checkExistingNumbersQuery, [lotto_id], (err, result) => {
+            if (err) {
+                console.error('Error checking existing lotto numbers:', err);
+                return res.status(500).send('เกิดข้อผิดพลาดในการตรวจสอบเลขล็อตโต้ที่มีอยู่');
+            }
+
+            const existingLottoNumbers = result.map(row => row.lotto_id);
+            const hasDuplicate = lotto_id.some(id => existingLottoNumbers.includes(id));
+
+            if (hasDuplicate) {
+                return res.status(400).send('หมายเลขล็อตโต้บางหมายเลขมีอยู่ในฐานข้อมูลแล้ว');
+            }
+
+            // ดึง round_number ล่าสุดจากฐานข้อมูล
+            const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
+            db.query(getLatestRoundQuery, (err, result) => {
+                if (err) {
+                    console.error('Error fetching latest round number:', err);
+                    return res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรอบล่าสุด');
+                }
+
+                const latestRound = result[0].latestRound || 0;
+                const newRoundNumber = latestRound + 1;
+                const currentDate = new Date();
+
+                // เตรียมข้อมูลสำหรับการแทรกผลการออกรางวัล
+                const insertQuery = `INSERT INTO reward (round, lotto_id, lotto_number, price, prize_order, date) VALUES ?`;
+                const values = lottoResults.map((lotto, index) => [
+                    newRoundNumber,        // round_number
+                    lotto.lotto_id,        // lotto_id ที่สุ่มได้
+                    lotto.lotto_number,    // lotto_number ที่สุ่มได้
+                    prizes[index],         // price ที่มาจาก array ของ prizes
+                    index + 1,             // prize_order (ลำดับรางวัล 1-5)
+                    currentDate            // date
+                ]);
+
+                // แทรกข้อมูลรอบใหม่ลงในฐานข้อมูล
+                db.query(insertQuery, [values], (err, result) => {
+                    if (err) {
+                        console.error('Error inserting lotto results:', err);
+                        return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
+                    }
+
+                    res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
+                });
+            });
+        });
+    });
+});
+
+
 
 
 app.get('/check_reward', (req, res) => {
