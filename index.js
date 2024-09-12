@@ -898,7 +898,7 @@ app.get('/get_reward', (req, res) => {
 
 
 app.get('/check_reward', (req, res) => {
-    const { lotto_id } = req.body;
+    const { lotto_id } = req.query;
     if (!lotto_id) {
         return res.status(400).json({ error: 'lotto_id is required' });
     }
