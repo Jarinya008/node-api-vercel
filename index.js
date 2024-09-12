@@ -708,7 +708,7 @@ app.post('/award_lotto_all', (req, res) => {
 app.post('/Award_lotto_all', (req, res) => {
     // ตรวจสอบการรับข้อมูล
     const { prizes } = req.body;
-
+    console.log('Received prizes:', prizes);
     // แปลง prizes จาก JSON string เป็น Array ถ้าจำเป็น
     let prizesArray;
     try {
@@ -732,7 +732,7 @@ app.post('/Award_lotto_all', (req, res) => {
             console.error('Error fetching lotto numbers:', err);
             return res.status(500).send('An error occurred while fetching lotto numbers.');
         }
-
+        console.log('Lotto results:', lottoResults);
         if (lottoResults.length === 0) {
             return res.status(404).send('No lotto numbers found.');
         }
