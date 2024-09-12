@@ -591,7 +591,7 @@ const round = 1;
 
 
 
-app.post('/award_lotto_all', (req, res) => {
+app.post('/award_lotto_allnmm', (req, res) => {
     const sqlCountRows = "SELECT COUNT(*) as rowCount FROM reward";
     db.query(sqlCountRows, (err, resultsRow) => {
         if (err) {
@@ -709,11 +709,13 @@ app.post('/Award_lotto_all', (req, res) => {
     // ตรวจสอบการรับข้อมูล
     const { prizes } = req.body;
     console.log('Received prizes:', prizes);
+
     // แปลง prizes จาก JSON string เป็น Array ถ้าจำเป็น
     let prizesArray;
     try {
         prizesArray = JSON.parse(prizes);
     } catch (e) {
+        console.error('Error parsing prizes:', e);
         return res.status(400).send('Invalid prizes format.');
     }
 
@@ -733,6 +735,7 @@ app.post('/Award_lotto_all', (req, res) => {
             return res.status(500).send('An error occurred while fetching lotto numbers.');
         }
         console.log('Lotto results:', lottoResults);
+
         if (lottoResults.length === 0) {
             return res.status(404).send('No lotto numbers found.');
         }
@@ -756,7 +759,7 @@ app.post('/Award_lotto_all', (req, res) => {
                 return res.status(400).send('หมายเลขล็อตโต้บางหมายเลขมีอยู่ในฐานข้อมูลแล้ว');
             }
 
-            // ดึง round_number ล่าสุดจากฐานข้อมูลmmkmk
+            // ดึง round_number ล่าสุดจากฐานข้อมูล
             const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
             db.query(getLatestRoundQuery, (err, result) => {
                 if (err) {
@@ -779,6 +782,8 @@ app.post('/Award_lotto_all', (req, res) => {
                     currentDate            // date
                 ]);
 
+                console.log('Insert values:', values);
+
                 // แทรกข้อมูลรอบใหม่ลงในฐานข้อมูล
                 db.query(insertQuery, [values], (err, result) => {
                     if (err) {
@@ -786,7 +791,7 @@ app.post('/Award_lotto_all', (req, res) => {
                         return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
                     }
 
-                    res.status(200).json({ messageee: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
+                    res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
                 });
             });
         });
