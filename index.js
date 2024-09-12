@@ -786,7 +786,7 @@ app.post('/Award_lotto_all', (req, res) => {
                         return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
                     }
 
-                    res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
+                    res.status(200).json({ messageee: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
                 });
             });
         });
