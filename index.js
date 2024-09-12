@@ -1189,6 +1189,28 @@ app.delete('/reset_system', (req, res) => {
 });
 
 
+app.get('/count_rows_lotto', (req, res) => {
+    // SQL query to count the total number of rows in the lotto table
+    const sql = 'SELECT COUNT(*) AS total FROM lotto';
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching count of lotto rows:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลจำนวนแถวของล็อตโต้');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('ไม่พบข้อมูลจำนวนแถวของล็อตโต้');
+        }
+
+        // Send back the count of rows
+        res.status(200).json({ total: results[0] });
+    });
+});
+
+
+
+
 module.exports = app;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
