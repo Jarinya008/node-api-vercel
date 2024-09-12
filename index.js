@@ -778,82 +778,70 @@ app.post('/Award_lotto_all', (req, res) => {
 
 app.post('/Award_lotto_status0', (req, res) => {
     const { prizes } = req.body;
+    // Query to select 5 random lotto_id and lotto_number from the lotto table
+    const selectLottoQuery = `
+        SELECT lotto_id, lotto_number 
+        FROM lotto 
+        WHERE status = 0 AND lotto_id NOT IN (SELECT lotto_id FROM reward) 
+        ORDER BY RAND() 
+        LIMIT 5
+    `;
 
-    // ตรวจสอบว่ามีรางวัลที่ต้องการสุ่มหรือไม่
-    if (!prizes || prizes.length === 0) {
-        return res.status(400).send('ต้องกรอกข้อมูลรางวัลอย่างน้อย 1 รายการ');
-    }
-
-    // สุ่มหมายเลขล็อตโต้ตามจำนวนรางวัลที่มี
-    const selectLottoQuery = `SELECT lotto_id, lotto_number FROM lotto 
-                              WHERE status = 0 AND lotto_id NOT IN (SELECT lotto_id FROM reward) 
-                              ORDER BY RAND() LIMIT ${prizes.length}`;
-    
-    db.query(selectLottoQuery, (err, lottoResults) => {
+    db.query(selectLottoQuery, (err, result) => {
         if (err) {
-            console.error('Error fetching lotto numbers:', err);
-            return res.status(500).send('An error occurred while fetching lotto numbers.');
+            console.error('Error selecting random lotto numbers:', err);
+            return res.status(500).send('เกิดข้อผิดพลาดในการสุ่มหมายเลขล็อตโต้');
         }
 
-        if (lottoResults.length === 0) {
-            return res.status(404).send('No lotto numbers found.');
+        if (result.length !== 5) {
+            return res.status(500).send('ไม่สามารถสุ่มหมายเลขล็อตโต้ได้ครบ 5 รายการ');
         }
 
-        // ตรวจสอบว่า lotto_id ที่สุ่มมาไม่ซ้ำกันในตาราง reward
-        const lotto_id = lottoResults.map(row => row.lotto_id);
-        const lotto_number = lottoResults.map(row => row.lotto_number);
+        const lottoIds = result.map(row => row.lotto_id);
+        const lottoNumbers = result.map(row => row.lotto_number);
+        const currentDate = new Date();
 
-        // ตรวจสอบว่าเลขล็อตโต้ที่สุ่มมาต้องไม่ซ้ำกับเลขล็อตโต้ที่มีอยู่ในตาราง reward
-        const checkExistingNumbersQuery = 'SELECT lotto_id FROM reward WHERE lotto_id IN (?)';
-        db.query(checkExistingNumbersQuery, [lotto_id], (err, result) => {
+        // Simulate prize amounts (assuming the prizes are the same for all)
+        //const prizes = [1000, 2000, 3000, 4000, 5000];  // Adjust as needed
+
+        // Get the latest round number
+        const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
+        db.query(getLatestRoundQuery, (err, roundResult) => {
             if (err) {
-                console.error('Error checking existing lotto numbers:', err);
-                return res.status(500).send('เกิดข้อผิดพลาดในการตรวจสอบเลขล็อตโต้ที่มีอยู่');
+                console.error('Error fetching latest round number:', err);
+                return res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรอบล่าสุด');
             }
 
-            const existingLottoNumbers = result.map(row => row.lotto_id);
-            const hasDuplicate = lotto_id.some(id => existingLottoNumbers.includes(id));
+            const latestRound = roundResult[0].latestRound || 0;
+            const newRoundNumber = latestRound + 1;
 
-            if (hasDuplicate) {
-                return res.status(400).send('หมายเลขล็อตโต้บางหมายเลขมีอยู่ในฐานข้อมูลแล้ว');
-            }
+            // Prepare data for insertion
+            const insertQuery = `
+                INSERT INTO reward (round, lotto_id, lotto_number, price, prize_order, date) 
+                VALUES ?
+            `;
+            const values = lottoNumbers.map((lotto_number, index) => [
+                newRoundNumber,        // round_number
+                lottoIds[index],       // lotto_id
+                lotto_number,          // lotto_number
+                prizes[index],         // price
+                index + 1,             // prize_order (1-5)
+                currentDate            // date
+            ]);
 
-            // ดึง round_number ล่าสุดจากฐานข้อมูล
-            const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
-            db.query(getLatestRoundQuery, (err, result) => {
+            // Insert new round data into the database
+            db.query(insertQuery, [values], (err) => {
                 if (err) {
-                    console.error('Error fetching latest round number:', err);
-                    return res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรอบล่าสุด');
+                    console.error('Error inserting lotto results:', err);
+                    return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
                 }
 
-                const latestRound = result[0].latestRound || 0;
-                const newRoundNumber = latestRound + 1;
-                const currentDate = new Date();
-
-                // เตรียมข้อมูลสำหรับการแทรกผลการออกรางวัล
-                const insertQuery = `INSERT INTO reward (round, lotto_id, lotto_number, price, prize_order, date) VALUES ?`;
-                const values = lottoResults.map((lotto, index) => [
-                    newRoundNumber,        // round_number
-                    lotto.lotto_id,        // lotto_id ที่สุ่มได้
-                    lotto.lotto_number,    // lotto_number ที่สุ่มได้
-                    prizes[index],         // price ที่มาจาก array ของ prizes
-                    index + 1,             // prize_order (ลำดับรางวัล 1-5)
-                    currentDate            // date
-                ]);
-
-                // แทรกข้อมูลรอบใหม่ลงในฐานข้อมูล
-                db.query(insertQuery, [values], (err, result) => {
-                    if (err) {
-                        console.error('Error inserting lotto results:', err);
-                        return res.status(500).send('เกิดข้อผิดพลาดในการบันทึกผลการออกรางวัล');
-                    }
-
-                    res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
-                });
+                res.status(200).json({ message: 'บันทึกผลการออกรางวัลสำเร็จ', newRoundNumber });
             });
         });
     });
 });
+
 
 app.get('/get_reward', (req, res) => {
     const sql = 'SELECT * FROM reward WHERE round = (SELECT MAX(round) FROM reward)';
