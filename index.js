@@ -875,7 +875,7 @@ app.get('/check_reward', (req, res) => {
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ message: 'คุณถูกหวยกิน' });
+            return res.status(404).json({ message: 'คุณถูกหวยกิน',data: 0 });
         }
 
         res.json({ message: 'คุณถูกหวย',data: result });
