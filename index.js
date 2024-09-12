@@ -756,7 +756,7 @@ app.post('/Award_lotto_all', (req, res) => {
                 return res.status(400).send('หมายเลขล็อตโต้บางหมายเลขมีอยู่ในฐานข้อมูลแล้ว');
             }
 
-            // ดึง round_number ล่าสุดจากฐานข้อมูล
+            // ดึง round_number ล่าสุดจากฐานข้อมูลmmkmk
             const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
             db.query(getLatestRoundQuery, (err, result) => {
                 if (err) {
