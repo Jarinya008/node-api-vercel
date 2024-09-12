@@ -970,6 +970,66 @@ app.post('/randomReward_Buy', (req, res) => {
 });
 
 
+app.delete('/reset_system', (req, res) => {
+    // คำสั่ง SQL สำหรับการลบข้อมูลในแต่ละตาราง
+    const sqlDeleteBasket = "DELETE FROM basket";
+    const sqlDeleteBuy = "DELETE FROM buy";
+    const sqlDeleteLotto = "DELETE FROM lotto";
+    const sqlDeleteReward = "DELETE FROM reward";
+    const sqlDeleteRandomReward = "DELETE FROM random_reward";
+    // คำสั่ง SQL สำหรับการลบข้อมูลในตาราง members ยกเว้นแถวที่มี type เป็น 'admin'
+    const sqlDeleteMembers = "DELETE FROM members WHERE type != 'admin'";
+
+    // ลบข้อมูลจากตาราง basket
+    db.query(sqlDeleteBasket, (err, resultBasket) => {
+        if (err) {
+            console.error('Error deleting from basket:', err);
+            return res.status(500).json({ error: 'Error deleting data from basket' });
+        }
+
+        // ลบข้อมูลจากตาราง buy
+        db.query(sqlDeleteBuy, (err, resultBuy) => {
+            if (err) {
+                console.error('Error deleting from buy:', err);
+                return res.status(500).json({ error: 'Error deleting data from buy' });
+            }
+
+            // ลบข้อมูลจากตาราง lotto
+            db.query(sqlDeleteLotto, (err, resultLotto) => {
+                if (err) {
+                    console.error('Error deleting from lotto:', err);
+                    return res.status(500).json({ error: 'Error deleting data from lotto' });
+                }
+
+                // ลบข้อมูลจากตาราง reward
+                db.query(sqlDeleteReward, (err, resultReward) => {
+                    if (err) {
+                        console.error('Error deleting from reward:', err);
+                        return res.status(500).json({ error: 'Error deleting data from reward' });
+                    }
+
+                    // ลบข้อมูลจากตาราง random_reward
+                    db.query(sqlDeleteRandomReward, (err, resultRandomReward) => {
+                        if (err) {
+                            console.error('Error deleting from random_reward:', err);
+                            return res.status(500).json({ error: 'Error deleting data from random_reward' });
+                        }
+
+                        // ลบข้อมูลจากตาราง members ยกเว้นที่ type เป็น 'admin'
+                        db.query(sqlDeleteMembers, (err, resultMembers) => {
+                            if (err) {
+                                console.error('Error deleting from members:', err);
+                                return res.status(500).json({ error: 'Error deleting data from members' });
+                            }
+
+                            res.json({ message: 'ระบบรีเซ็ตข้อมูลสำเร็จ' });
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
 
 
 module.exports = app;
