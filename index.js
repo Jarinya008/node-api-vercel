@@ -708,6 +708,7 @@ app.post('/award_lotto_allnmm', (req, res) => {
 
 
 app.post('/Award_lotto_all', (req, res) => {
+    const { prizes } = req.body;
     // Query to select 5 random lotto_id and lotto_number from the lotto table
     const selectLottoQuery = `
         SELECT lotto_id, lotto_number 
@@ -732,7 +733,7 @@ app.post('/Award_lotto_all', (req, res) => {
         const currentDate = new Date();
 
         // Simulate prize amounts (assuming the prizes are the same for all)
-        const prizes = [1000, 2000, 3000, 4000, 5000];  // Adjust as needed
+        //const prizes = [1000, 2000, 3000, 4000, 5000];  // Adjust as needed
 
         // Get the latest round number
         const getLatestRoundQuery = 'SELECT MAX(round) AS latestRound FROM reward';
